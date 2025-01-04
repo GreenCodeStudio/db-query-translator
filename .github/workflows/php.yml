@@ -77,14 +77,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - name: Setup MySQL
-        uses: nano113/setup-mysql@v1
-        with:
-          mysql-version: '8.0'
-          root-password: root
-          port: 3306
-          databases: test_db
-
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
