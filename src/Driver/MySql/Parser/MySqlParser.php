@@ -28,6 +28,7 @@ class MySqlParser extends AbstractSqlParser
         $ret=new Select();
 
         while(!$this->endOfCode()){
+            $this->skipWhitespace();
             if($this->isKeyword('*')){
                 $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
                 $this->skipKeyword('*');
@@ -38,7 +39,7 @@ class MySqlParser extends AbstractSqlParser
                 if($this->isKeyword('AS')){
                     $this->skipKeyword('AS');
                     $this->skipWhitespace();
-                    $name = $this->readUntill('/\s/');
+                    $name = $this->readUntill('/[\s,]/');
                 }
                 $ret->columns[] = new SelectColumn($name, $expression);
             }

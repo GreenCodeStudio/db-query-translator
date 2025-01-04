@@ -5,8 +5,8 @@ namespace Mkrawczyk\DbQueryTranslator\Nodes\Query\Column;
 class SelectColumn
 {
 
-    private string $name;
-    private mixed $expression;
+    public string $name;
+    public mixed $expression;
 
     public function __construct(string $name, $expression)
     {

@@ -2,6 +2,8 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 use PHPUnit\Framework\TestCase;
 
@@ -22,5 +24,32 @@ class MySqlSelectTest extends TestCase
         $serialized = $driver->serialize($parsed);
 
         $this->assertEquals($sql, $serialized);
+    }
+    public function testSelectExpressions()
+    {
+
+        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $sql = "SELECT 1+1, 2+2 as four";
+        $sqlWanted = "SELECT 1 + 1 AS `1+1`, 2 + 2 AS `four`";
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertCount(2, $parsed->columns);
+        $this->assertInstanceOf(SelectColumn::class, $parsed->columns[0]);
+        $this->assertInstanceOf(Addition::class, $parsed->columns[0]->expression);
+        $this->assertEquals('1', $parsed->columns[0]->expression->left->value);
+        $this->assertEquals('1', $parsed->columns[0]->expression->right->value);
+        $this->assertEquals('1+1', $parsed->columns[0]->name);
+        $this->assertInstanceOf(SelectColumn::class, $parsed->columns[1]);
+        $this->assertInstanceOf(Addition::class, $parsed->columns[1]->expression);
+        $this->assertEquals('2', $parsed->columns[1]->expression->left->value);
+        $this->assertEquals('2', $parsed->columns[1]->expression->right->value);
+        $this->assertEquals('four', $parsed->columns[1]->name);
+
+        $this->assertNull($parsed->from);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
+
     }
 }

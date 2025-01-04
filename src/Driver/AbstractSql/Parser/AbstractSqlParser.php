@@ -17,7 +17,7 @@ abstract class AbstractSqlParser
 
     protected function throw(string $reason)
     {
-        throw new \Exception("Parser error on position ".$this->position.": ".$reason);
+        throw new \Exception("Parser error on position ".$this->position.": ".$reason."\r\n".substr($this->code, $this->position - 10, 10)."\033[31;1;4m".substr($this->code, $this->position, 10)."\033[0m");
     }
 
 
@@ -69,10 +69,11 @@ abstract class AbstractSqlParser
         $lastNode = null;
         while (!$this->endOfCode()) {
             $this->skipWhitespace();
-            if($this->isKeyword('AS')){
+            if ($this->isKeyword('AS')) {
                 return $lastNode;
-            }
-            else if ($this->isChar('/[0-9]/')) {
+            } else if ($this->isKeyword(',')) {
+                return $lastNode;
+            } else if ($this->isChar('/[0-9]/')) {
                 $number = $this->readUntill('/[^0-9]/');
                 $lastNode = new Literal('int', $number);
             } else if ($this->isChar('/[\'"]/')) {
