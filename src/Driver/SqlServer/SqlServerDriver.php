@@ -18,7 +18,7 @@ class SqlServerDriver
 
     public function serialize($node)
     {
-        $serializer = new Serializer\SqlServerSerializer();
+        $serializer = new SqlServerSerializer();
         return $serializer->serialize($node);
     }
 }

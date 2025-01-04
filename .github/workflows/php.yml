@@ -48,3 +48,38 @@ jobs:
 
       - name: PhpStan
         run: composer run-script phpstan
+  e2eTests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ 8.4 ]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Setup MySQL
+        uses: nano113/setup-mysql@v1
+        with:
+          mysql-version: '8.0'
+          root-password: root
+          port: 3306
+          databases: test_db
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Install dependencies
+        run: composer update --prefer-dist --no-progress
+
+      - name: Run e2e tests
+        run: composer run-script testE2E
