@@ -70,7 +70,6 @@ jobs:
           SA_PASSWORD: RootRoot1
         ports:
           - 1433:1433
-        options: --health-cmd="sqlcmd -U SA -P RootRoot1 -Q 'SELECT 1'" --health-interval=10s --health-timeout=5s --health-retries=3
 
     strategy:
       matrix:
