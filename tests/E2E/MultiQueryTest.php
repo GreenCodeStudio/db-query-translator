@@ -26,10 +26,10 @@ class MultiQueryTest extends TestCase
             $stmt = $originalConnection->pdo->query($sql);
             $results[] = $stmt->fetchAll();
             var_dump($results);
-            foreach ($connections as $targetConnection) {
+            foreach ($connections as $targetName => $targetConnection) {
                 $parsed = $originalConnection->driver->parse($sql);
                 $sql = $targetConnection->driver->serialize($parsed);
-
+                echo $targetName.': '.$sql.PHP_EOL;
                 $stmt = $targetConnection->pdo->query($sql);
                 $results[] = $stmt->fetchAll();
             }
