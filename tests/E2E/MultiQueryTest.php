@@ -29,7 +29,7 @@ class MultiQueryTest extends TestCase
                 $parsed = $originalConnection->driver->parse($sql);
                 $sql2 = $targetConnection->driver->serialize($parsed);
                 echo $targetName.': '.$sql2.PHP_EOL;
-                $results[] =  $originalConnection->connection->query($sql2);
+                $results[] =  $targetConnection->connection->query($sql2);
             }
             $this->matchAnyPair($results);
         }
