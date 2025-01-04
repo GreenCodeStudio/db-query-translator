@@ -23,15 +23,13 @@ class MultiQueryTest extends TestCase
         foreach ($this->getQueries() as [$sql, $originalDialect]) {
             $results = [];
             $originalConnection = $connections[$originalDialect];
-            $stmt = $originalConnection->pdo->query($sql);
-            $results[] = $stmt->fetchAll();
+            $results[] =  $originalConnection->connection->query($sql);
             var_dump($results);
             foreach ($connections as $targetName => $targetConnection) {
                 $parsed = $originalConnection->driver->parse($sql);
                 $sql2 = $targetConnection->driver->serialize($parsed);
                 echo $targetName.': '.$sql2.PHP_EOL;
-                $stmt = $targetConnection->pdo->query($sql2);
-                $results[] = $stmt->fetchAll();
+                $results[] =  $originalConnection->connection->query($sql2);
             }
             $this->matchAnyPair($results);
         }

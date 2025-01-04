@@ -11,11 +11,15 @@ class Connections
         return [
             'MySql' => (object)[
                 'driver' => new MySqlDriver(),
-                'pdo' => new \PDO('mysql:host=127.0.0.1;dbname=test_db', 'root', 'root')
+                'connection' => new PdoConnection('mysql:host=127.0.0.1;dbname=test_db', 'root', 'root')
             ],
-            'SqlServer'=> (object)[
+            'SqlServer' => (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
-                'pdo' => new \PDO('sqlsrv:Server=localhost;Database=master', 'sa', 'RootRoot1')
+                'connection' => new PdoConnection('sqlsrv:Server=localhost;Database=master', 'sa', 'RootRoot1')
+            ],
+            'MongoDB' => (object)[
+                'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\MongoDB\MongoDBDriver(),
+                'connection' => new MongoConnection('mongodb://localhost:27017')
             ]
         ];
     }

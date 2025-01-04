@@ -66,4 +66,12 @@ class CrossTest extends TestCase
             }
         }
     }
+//    public function testMongo()
+//    {
+//        $mongoConnection = new \Mkrawczyk\DbQueryTranslator\Tests\E2E\MongoConnection('mongodb://localhost:27017');
+//        $resp=$mongoConnection->query([
+//            ['$project' => ['name' =>  ['$convert'=>['input'=>3, 'to'=>'int']]]],
+//        ]);
+//        var_dump($resp);
+//    }
 }

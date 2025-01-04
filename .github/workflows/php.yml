@@ -71,6 +71,11 @@ jobs:
         ports:
           - 1433:1433
 
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
     strategy:
       matrix:
         php: [ 8.4 ]
