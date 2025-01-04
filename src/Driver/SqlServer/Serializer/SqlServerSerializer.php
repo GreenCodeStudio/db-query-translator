@@ -2,11 +2,11 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\SqlServer\Serializer;
 
-use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Serializer\AbstractSQLSerializer;
+use Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer\AbstractSqlSerializer;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 
 
-class SqlServerSerializer extends AbstractSQLSerializer
+class SqlServerSerializer extends AbstractSqlSerializer
 {
     public function serialize($node): string
     {
