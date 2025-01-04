@@ -18,5 +18,9 @@ class MySQLSelectTest extends TestCase
         $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll::class, $parsed->columns[0]);
         $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table::class, $parsed->from);
         $this->assertEquals('example', $parsed->from->tableName);
+
+        $serialized = $driver->serialize($parsed);
+
+        $this->assertEquals($sql, $serialized);
     }
 }

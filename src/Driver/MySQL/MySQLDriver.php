@@ -14,4 +14,10 @@ class MySQLDriver
         $parser = new Parser\MySQLParser($sql);
         return $parser->parse();
     }
+
+    public function serialize($node)
+    {
+        $serializer = new Serializer\MySQLSerializer();
+        return $serializer->serialize($node);
+    }
 }

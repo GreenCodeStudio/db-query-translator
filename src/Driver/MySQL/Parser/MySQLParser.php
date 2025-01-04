@@ -24,7 +24,7 @@ class MySQLParser extends AbstractSQLParser
                     $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
                     $this->skipKeyword('*');
                 }else{
-                    $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\Select($this->readIdentifier());
+                    $this->throw('Not implemented');
                 }
                 $this->skipWhitespace();
                 if($this->isKeyword(',')){
