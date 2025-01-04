@@ -4,7 +4,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\SQLServer;
 
 use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\AbstractSQLDriver;
 
-class SQLServerDriver
+class SqlServerDriver
 {
     public function __construct()
     {
@@ -12,7 +12,7 @@ class SQLServerDriver
 
     public function parse(string $sql)
     {
-        $parser = new Parser\SQLServerParser($sql);
+        $parser = new Parser\SqlServerParser($sql);
         return $parser->parse();
     }
 

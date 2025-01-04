@@ -2,7 +2,7 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Parser;
 
-abstract class AbstractSQLParser
+abstract class AbstractSqlParser
 {
 
     protected string $code;

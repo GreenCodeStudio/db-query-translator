@@ -26,7 +26,7 @@ class CrossTest extends TestCase
     {
         return
             [
-                'MySQL' => new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySQLDriver(),
+                'MySQL' => new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySqlDriver(),
                 'SqlServer' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver()
             ];
     }

@@ -2,7 +2,7 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL;
 
-class MySQLDriver
+class MySqlDriver
 {
 
     public function __construct()
@@ -11,13 +11,13 @@ class MySQLDriver
 
     public function parse(string $sql)
     {
-        $parser = new Parser\MySQLParser($sql);
+        $parser = new Parser\MySqlParser($sql);
         return $parser->parse();
     }
 
     public function serialize($node)
     {
-        $serializer = new Serializer\MySQLSerializer();
+        $serializer = new Serializer\MySqlSerializer();
         return $serializer->serialize($node);
     }
 }

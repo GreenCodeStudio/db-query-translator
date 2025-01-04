@@ -2,12 +2,12 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL\Serializer;
 
-use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Serializer\AbstractSQLSerializer;
+use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Serializer\AbstractSqlSerializer;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
-class MySQLSerializer extends AbstractSQLSerializer
+class MySqlSerializer extends AbstractSqlSerializer
 {
     public function serialize($node): string
     {

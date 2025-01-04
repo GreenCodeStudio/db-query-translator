@@ -5,11 +5,11 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL\Tests;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 use PHPUnit\Framework\TestCase;
 
-class MySQLSelectTest extends TestCase
+class MySqlSelectTest extends TestCase
 {
     public function testSelectAll()
     {
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySQLDriver();
+        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySqlDriver();
         $sql = "SELECT * FROM `example`";
         $parsed = $driver->parse($sql);
 
