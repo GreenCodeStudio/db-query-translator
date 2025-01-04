@@ -9,7 +9,7 @@ class CrossTest extends TestCase
     public function getQueries()
     {
         return [[
-            'MySQL' =>
+            'MySql' =>
                 [
                     "SELECT * FROM `example`",
                     "SELECT * FROM example"
@@ -26,7 +26,7 @@ class CrossTest extends TestCase
     {
         return
             [
-                'MySQL' => new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySqlDriver(),
+                'MySql' => new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver(),
                 'SqlServer' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver()
             ];
     }

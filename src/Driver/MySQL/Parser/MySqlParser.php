@@ -1,8 +1,8 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL\Parser;
+namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Parser;
 
-use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Parser\AbstractSqlParser;
+use Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser\AbstractSqlParser;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 

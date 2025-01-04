@@ -1,6 +1,6 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL;
+namespace Mkrawczyk\DbQueryTranslator\Driver\MySql;
 
 class MySqlDriver
 {

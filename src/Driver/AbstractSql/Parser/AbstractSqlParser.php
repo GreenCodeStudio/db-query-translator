@@ -1,6 +1,6 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Parser;
+namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 abstract class AbstractSqlParser
 {

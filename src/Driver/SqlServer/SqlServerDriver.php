@@ -1,8 +1,8 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\SQLServer;
+namespace Mkrawczyk\DbQueryTranslator\Driver\SqlServer;
 
-use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\AbstractSQLDriver;
+use Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\AbstractSqlDriver;
 
 class SqlServerDriver
 {
@@ -18,7 +18,7 @@ class SqlServerDriver
 
     public function serialize($node)
     {
-        $serializer = new Serializer\SQLServerSerializer();
+        $serializer = new Serializer\SqlServerSerializer();
         return $serializer->serialize($node);
     }
 }

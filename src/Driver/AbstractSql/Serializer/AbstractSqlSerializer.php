@@ -1,6 +1,6 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Serializer;
+namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer;
 
 class AbstractSqlSerializer
 {

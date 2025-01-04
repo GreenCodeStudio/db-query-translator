@@ -1,6 +1,6 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL\Tests;
+namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 use PHPUnit\Framework\TestCase;
@@ -9,7 +9,7 @@ class MySqlSelectTest extends TestCase
 {
     public function testSelectAll()
     {
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySQL\MySqlDriver();
+        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
         $sql = "SELECT * FROM `example`";
         $parsed = $driver->parse($sql);
 
