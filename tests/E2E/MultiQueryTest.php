@@ -16,7 +16,7 @@ class MultiQueryTest extends TestCase
         ];
     }
 
-    public function MultiQueryTest()
+    public function testMultiQuery()
     {
         $connections = Connections::getConnections();
 
