@@ -10,7 +10,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Mkrawczyk\\DbQueryTranslator\\": "src/"
+            "Mkrawczyk\\DbQueryTranslator\\": "src/",
+            "Mkrawczyk\\DbQueryTranslator\\Tests\\": "tests/"
         }
     },
     "authors": [
