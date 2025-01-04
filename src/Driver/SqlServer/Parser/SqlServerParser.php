@@ -4,6 +4,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\SqlServer\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser\AbstractSqlParser;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
+use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
 class SqlServerParser extends AbstractSqlParser
@@ -31,7 +32,15 @@ class SqlServerParser extends AbstractSqlParser
                 $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
                 $this->skipKeyword('*');
             }else{
-                $this->throw('Not implemented');
+                $startPosition = $this->position;
+                $expression = $this->parseExpression();
+                $name = substr($this->code, $startPosition, $this->position - $startPosition);
+                if($this->isKeyword('AS')){
+                    $this->skipKeyword('AS');
+                    $this->skipWhitespace();
+                    $name = $this->readUntill('/\s/');
+                }
+                $ret->columns[] = new SelectColumn($name, $expression);
             }
             $this->skipWhitespace();
             if($this->isKeyword('[')){

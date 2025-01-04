@@ -19,7 +19,20 @@ class CrossTest extends TestCase
                     "SELECT * FROM [example]",
                     "SELECT * FROM example"
                 ]
-        ]];
+        ],[
+            'MySql' =>
+                [
+                    "SELECT 2+2 as four",
+                    "SELECT 2   +2 as four"
+                ],
+            'SqlServer' =>
+                [
+                    "SELECT 2+2 as four",
+                    "SELECT 2   +2 as four"
+                ]
+        ],
+
+            ];
     }
 
     public function getDrivers()
