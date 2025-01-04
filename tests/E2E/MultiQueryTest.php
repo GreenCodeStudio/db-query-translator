@@ -33,6 +33,7 @@ class MultiQueryTest extends TestCase
                 $stmt = $targetConnection->pdo->query($sql2);
                 $results[] = $stmt->fetchAll();
             }
+            $this->matchAnyPair($results);
         }
     }
 
