@@ -1,12 +1,12 @@
 <?php
 
-namespace Mkrawczyk\DbQueryTranslator\Driver\MySQL\Parser;
+namespace Mkrawczyk\DbQueryTranslator\Driver\SQLServer\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Parser\AbstractSQLParser;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
-class MySQLParser extends AbstractSQLParser
+class SQLServerParser extends AbstractSQLParser
 {
     public function __construct(string $code)
     {
@@ -34,8 +34,8 @@ class MySQLParser extends AbstractSQLParser
                 $this->throw('Not implemented');
             }
             $this->skipWhitespace();
-            if($this->isKeyword(',')){
-                $this->skipKeyword(',');
+            if($this->isKeyword('[')){
+                $this->skipKeyword(']');
                 $this->skipWhitespace();
             }else{
                 break;
@@ -51,10 +51,10 @@ class MySQLParser extends AbstractSQLParser
     private function readTable(){
         $this->skipWhitespace();
 
-        if($this->isKeyword('`')) {
-            $this->skipKeyword('`');
-            $firstName = $this->readUntill('/`/');
-            $this->skipKeyword('`');
+        if($this->isKeyword('[')) {
+            $this->skipKeyword('[');
+            $firstName = $this->readUntill('/]/');
+            $this->skipKeyword(']');
         }else{
             $firstName=$this->readUntill('/\s/');
         }

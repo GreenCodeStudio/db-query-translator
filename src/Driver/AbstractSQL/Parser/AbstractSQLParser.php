@@ -2,7 +2,7 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSQL\Parser;
 
-class AbstractSQLParser
+abstract class AbstractSQLParser
 {
 
     protected string $code;
@@ -52,4 +52,5 @@ class AbstractSQLParser
         }
         return $ret;
     }
+    protected abstract function readSelect();
 }

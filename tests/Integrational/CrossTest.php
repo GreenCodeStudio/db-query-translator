@@ -42,7 +42,7 @@ class CrossTest extends TestCase
                     $parsed[] = $driver->parse($query);
                 }
             }
-
+            $this->checkEachPair($parsed);
         }
     }
     public function checkEachPair($parsed)

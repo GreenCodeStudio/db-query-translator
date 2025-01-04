@@ -21,8 +21,8 @@
     ],
     "require": {},
     "scripts": {
-        "testBasic": "phpunit src",
-        "testE2E": "phpunit tests/e2e",
+        "testBasic": "phpunit src tests/Integrational",
+        "testE2E": "phpunit tests/E2E",
         "rector": "vendor/bin/rector process src --dry-run",
         "phpstan": "vendor/bin/phpstan analyse src --level 5"
     }
