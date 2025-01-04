@@ -11,7 +11,7 @@ class Connections
         return [
             'MySql' => (object)[
                 'driver' => new MySqlDriver(),
-                'connection' => new \PDO('mysql:host=localhost;dbname=test_db', 'root', 'root')
+                'connection' => new \PDO('mysql:host=127.0.0.1;dbname=test_db', 'root', 'root')
             ],
             'SqlServer'=> (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
