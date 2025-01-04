@@ -58,7 +58,7 @@ jobs:
           MYSQL_DATABASE: test_db
           MYSQL_USER: user
           MYSQL_PASSWORD: user
-          MYSQL_ROOT_PASSWORD: rootroot
+          MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -67,7 +67,7 @@ jobs:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: root
+          SA_PASSWORD: rootroot
         ports:
           - 1433:1433
         options: --health-cmd="sqlcmd -U SA -P root -Q 'SELECT 1'" --health-interval=10s --health-timeout=5s --health-retries=3
