@@ -15,7 +15,7 @@ class Connections
             ],
             'SqlServer'=> (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
-                'connection' => new \PDO('sqlsrv:Server=localhost;Database=test_db', 'sa', 'RootRoot1')
+                'connection' => new \PDO('sqlsrv:Server=localhost;Database=master', 'sa', 'RootRoot1')
             ]
         ];
     }
