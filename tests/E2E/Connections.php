@@ -11,7 +11,7 @@ class Connections
         return [
             'mysql' => (object)[
                 'driver' => new MySqlDriver(),
-                'connection' => new \PDO('mysql:host=localhost;dbname=test', 'root', 'root')
+                'connection' => new \PDO('mysql:host=localhost;dbname=test_db', 'root', 'root')
             ]
         ];
     }
