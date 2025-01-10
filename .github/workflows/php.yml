@@ -103,6 +103,15 @@ jobs:
         php: [ 8.4 ]
     needs: build
     steps:
+      - name: Set up Oracle
+        uses: gvenzl/setup-oracle-free@v1
+        with:
+          app-user: system
+          app-user-password: yourStrong(!)Password
+          oracle-password: yourStrong(!)Password
+          volume: ${{ github.workspace }}/database-files
+
+
       - uses: actions/checkout@v4
       - name: Cache Composer packages
         id: composer-cache
@@ -113,8 +122,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - name: health1
-        run:           "mysqladmin ping"
+
       - name: health2
         run: pg_isready -U user
       - name: health3
