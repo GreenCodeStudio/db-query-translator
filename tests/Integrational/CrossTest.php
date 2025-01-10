@@ -8,31 +8,51 @@ class CrossTest extends TestCase
 {
     public function getQueries()
     {
-        return [[
-            'MySql' =>
-                [
-                    "SELECT * FROM `example`",
-                    "SELECT * FROM example"
-                ],
-            'SqlServer' =>
-                [
-                    "SELECT * FROM [example]",
-                    "SELECT * FROM example"
-                ]
-        ],[
-            'MySql' =>
-                [
-                    "SELECT 2+2 as four",
-                    "SELECT 2   +2 as four"
-                ],
-            'SqlServer' =>
-                [
-                    "SELECT 2+2 as four",
-                    "SELECT 2   +2 as four"
-                ]
-        ],
+        return [
+            [
+                'MySql' =>
+                    [
+                        "SELECT * FROM `example`",
+                        "SELECT * FROM example"
+                    ],
+                'SqlServer' =>
+                    [
+                        "SELECT * FROM [example]",
+                        "SELECT * FROM example"
+                    ],
+            ],
+            [
+                'MySql' =>
+                    [
+                        "SELECT 2+2 as four",
+                        "SELECT 2   +2 as four"
+                    ],
+                'SqlServer' =>
+                    [
+                        "SELECT 2+2 as four",
+                        "SELECT 2   +2 as four"
+                    ],
+                'MongoDB' =>
+                    [
+                        [
+                            '$project' => ['four' => ['$add' => [2, 2]]]
+                        ]
+                    ]
+            ],
+            [
+                'MySql' =>
+                    [
+                        "SELECT * FROM `example` WHERE `id` = 1",
+                        "SELECT * FROM example WHERE id = 1"
+                    ],
+                'SqlServer' =>
+                    [
+                        "SELECT * FROM [example] WHERE [id] = 1",
+                        "SELECT * FROM example WHERE id = 1"
+                    ],
+            ],
 
-            ];
+        ];
     }
 
     public function getDrivers()
@@ -40,7 +60,8 @@ class CrossTest extends TestCase
         return
             [
                 'MySql' => new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver(),
-                'SqlServer' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver()
+                'SqlServer' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
+                'MongoDB' => new \Mkrawczyk\DbQueryTranslator\Driver\MongoDB\MongoDBDriver(),
             ];
     }
 
@@ -58,10 +79,11 @@ class CrossTest extends TestCase
             $this->checkEachPair($parsed);
         }
     }
+
     public function checkEachPair($parsed)
     {
-        for($i = 0; $i < count($parsed); $i++){
-            for($j = $i + 1; $j < count($parsed); $j++){
+        for ($i = 0; $i < count($parsed); $i++) {
+            for ($j = $i + 1; $j < count($parsed); $j++) {
                 $this->assertEquals($parsed[$i], $parsed[$j]);
             }
         }

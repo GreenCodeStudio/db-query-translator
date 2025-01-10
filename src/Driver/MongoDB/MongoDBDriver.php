@@ -11,4 +11,9 @@ class MongoDBDriver
         $serializer = new MongoDBSerializer();
         return $serializer->serialize($node);
     }
+    public function parse(array $aggregate)
+    {
+        $parser = new Parser\MongoDBParser();
+        return $parser->parseAggregate($aggregate);
+    }
 }
