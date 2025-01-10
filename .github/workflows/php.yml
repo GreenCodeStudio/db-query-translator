@@ -75,6 +75,24 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+      oracle:
+        image: store/oracle/database-enterprise
+        env:
+          ORACLE_ALLOW_REMOTE: true
+          ORACLE_HOME: /opt/oracle/product/19c/dbhome_1
+          ORACLE_SID: ORCLCDB
+          ORACLE_PDB: ORCLPDB1
+          ORACLE_PWD: Oracle19
+          ORACLE_CHARACTERSET: AL32UTF8
+
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: user
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
 
     strategy:
       matrix:
