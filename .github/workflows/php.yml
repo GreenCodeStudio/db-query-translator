@@ -77,7 +77,7 @@ jobs:
           - 27017:27017
 #        options: "--health-cmd=\"mongo --eval 'db.runCommand({ connectionStatus: 1 })'\" --health-interval=10s --health-timeout=5s --health-retries=3"
 
-      oracle:
+      oracledb:
         image: gvenzl/oracle-free:latest
         env:
           ORACLE_SID: XE
