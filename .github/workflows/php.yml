@@ -75,7 +75,7 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
-        options: "--health-cmd=\"mongo --eval 'db.runCommand({ connectionStatus: 1 })'\" --health-interval=10s --health-timeout=5s --health-retries=3"
+#        options: "--health-cmd=\"mongo --eval 'db.runCommand({ connectionStatus: 1 })'\" --health-interval=10s --health-timeout=5s --health-retries=3"
 
       oracle:
         image: gvenzl/oracle-free:latest
@@ -86,7 +86,7 @@ jobs:
           ORACLE_PASSWORD: yourStrong(!)Password
         ports:
           - 1521:1521
-        options: "--health-cmd=\"echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/yourStrong(!)Password@localhost:1521/XE\" --health-interval=10s --health-timeout=5s --health-retries=3"
+#        options: "--health-cmd=\"echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/yourStrong(!)Password@localhost:1521/XE\" --health-interval=10s --health-timeout=5s --health-retries=3"
 
       postgres:
         image: postgres:latest
@@ -113,6 +113,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
+      - name: health1
+        run:           "mysqladmin ping"
+      - name: health2
+        run: pg_isready -U user
+      - name: health3
+        run: echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/yourStrong(!)Password@localhost:1521/XE\
+      - name: health4
+        run: "mongo --eval 'db.runCommand({ connectionStatus: 1 })'"
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
