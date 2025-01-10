@@ -3,6 +3,7 @@
 namespace Mkrawczyk\DbQueryTranslator\Tests\E2E;
 
 use MKrawczyk\FunQuery\FunQuery;
+use MongoDB\Model\BSONDocument;
 
 class MongoConnection
 {
@@ -21,6 +22,9 @@ class MongoConnection
     public function query($aggregate)
     {
         $collection = $this->mongo->test_db->test_collection;
-        return $collection->aggregate($aggregate)->toArray();
+        $result= $collection->aggregate($aggregate)->toArray();
+        var_dump($result);
+        FunQuery::create($result)->each(fn($item) => var_dump($item));
+        FunQuery::create($result)->map(fn(BSONDocument $item) => $item->getArrayCopy())->toArray();
     }
 }
