@@ -51,6 +51,22 @@ class CrossTest extends TestCase
                         "SELECT * FROM example WHERE id = 1"
                     ],
             ],
+//            [
+//                'MySql'=>[
+//                    'SELECT one, two + 3, 3-4, 5*6, 7/8, `nine` %10 FROM example',
+//                ],
+//                'SqlServer'=>[
+//                    'SELECT one, two + 3, 3-4, 5*6, 7/8, [nine] %10 FROM example',
+//                ],
+//            ],
+//            [
+//                'MySql'=>[
+//                    'SELECT * FROM example WHERE id = 1 AND name = "John"',
+//                ],
+//                'SqlServer'=>[
+//                    'SELECT * FROM example WHERE id = 1 AND name = \'John\'',
+//                ],
+//            ]
 
         ];
     }
