@@ -10,6 +10,8 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 class MongoDBParser
 {
 
+    private Select $query;
+
     public function parseAggregate(array $aggregate)
     {
         $this->query = new Select();
