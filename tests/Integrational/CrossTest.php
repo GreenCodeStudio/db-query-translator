@@ -51,14 +51,14 @@ class CrossTest extends TestCase
                         "SELECT * FROM example WHERE id = 1"
                     ],
             ],
-//            [
-//                'MySql'=>[
-//                    'SELECT one, two + 3, 3-4, 5*6, 7/8, `nine` %10 FROM example',
-//                ],
-//                'SqlServer'=>[
-//                    'SELECT one, two + 3, 3-4, 5*6, 7/8, [nine] %10 FROM example',
-//                ],
-//            ],
+            [
+                'MySql'=>[
+                    'SELECT one, two + 3, 3-4, 5*6, 7/8, `nine` %10 as ninemod FROM example',
+                ],
+                'SqlServer'=>[
+                    'SELECT one, two + 3, 3-4, 5*6, 7/8, [nine] %10 as ninemod FROM example',
+                ],
+            ],
 //            [
 //                'MySql'=>[
 //                    'SELECT * FROM example WHERE id = 1 AND name = "John"',
@@ -89,18 +89,18 @@ class CrossTest extends TestCase
             foreach ($group as $driverName => $queries) {
                 $driver = $drivers[$driverName];
                 foreach ($queries as $query) {
-                    $parsed[] = $driver->parse($query);
+                    $parsed[] = [$driverName,$query, $driver->parse($query)];
                 }
             }
-            $this->checkEachPair($parsed, json_encode($group));
+            $this->checkEachPair($parsed);
         }
     }
 
-    public function checkEachPair($parsed, $message)
+    public function checkEachPair($parsed)
     {
         for ($i = 0; $i < count($parsed); $i++) {
             for ($j = $i + 1; $j < count($parsed); $j++) {
-                $this->assertEquals($parsed[$i], $parsed[$j], $message);
+                $this->assertEquals($parsed[$i][2], $parsed[$j][2], json_encode([$parsed[$i][0], $parsed[$i][1], $parsed[$j][0], $parsed[$j][1]]));
             }
         }
     }

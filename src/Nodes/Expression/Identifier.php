@@ -1,7 +1,7 @@
 <?php
 
 namespace Mkrawczyk\DbQueryTranslator\Nodes\Expression;
-class Column
+class Identifier
 {
     public string $name;
     public function __construct(string $name)

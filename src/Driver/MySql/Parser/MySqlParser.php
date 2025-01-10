@@ -21,44 +21,7 @@ class MySqlParser extends AbstractSqlParser
             $this->throw('Keyword expected');
         }
     }
-    protected function readSelect()
-    {
-        $this->skipKeyword('SELECT');
-        $this->skipWhitespace();
-        $ret=new Select();
-
-        while(!$this->endOfCode()){
-            $this->skipWhitespace();
-            if($this->isKeyword('*')){
-                $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
-                $this->skipKeyword('*');
-            }else{
-                $startPosition = $this->position;
-                $expression = $this->parseExpression();
-                $name = substr($this->code, $startPosition, $this->position - $startPosition);
-                if($this->isKeyword('AS')){
-                    $this->skipKeyword('AS');
-                    $this->skipWhitespace();
-                    $name = $this->readUntill('/[\s,]/');
-                }
-                $ret->columns[] = new SelectColumn($name, $expression);
-            }
-            $this->skipWhitespace();
-            if($this->isKeyword(',')){
-                $this->skipKeyword(',');
-                $this->skipWhitespace();
-            }else{
-                break;
-            }
-        }
-        if($this->isKeyword('FROM')){
-            $this->skipKeyword('FROM');
-            $this->skipWhitespace();
-            $ret->from = $this->readTable();
-        }
-        return $ret;
-    }
-    private function readTable(){
+    protected function readTable(){
         $this->skipWhitespace();
 
         if($this->isKeyword('`')) {
@@ -71,4 +34,12 @@ class MySqlParser extends AbstractSqlParser
         return new Table($firstName);
     }
 
+    protected function getIdentifierQuoteRegexpStart():?string
+    {
+        return '/`/';
+    }
+    protected function getIdentifierQuoteRegexpEnd():?string
+    {
+        return '/`/';
+    }
 }

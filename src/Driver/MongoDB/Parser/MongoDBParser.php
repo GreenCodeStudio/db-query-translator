@@ -3,7 +3,7 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\MongoDB\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
-use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Column;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
@@ -37,7 +37,7 @@ class MongoDBParser
                 }
             }
             if(!$isId){
-                $this->query->columns[] = new SelectColumn('_id', new Column('_id'));
+                $this->query->columns[] = new SelectColumn('_id', new Identifier('_id'));
             }
 
         }else if($stage === '$match'){

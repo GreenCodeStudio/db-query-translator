@@ -3,6 +3,8 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
+use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
+use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
 abstract class AbstractSqlParser
 {
@@ -61,33 +63,73 @@ abstract class AbstractSqlParser
         }
         return $ret;
     }
-
-    protected abstract function readSelect();
+    protected function getIdentifierQuoteRegexpStart():?string
+    {
+        return null;
+    }
+    protected function getIdentifierQuoteRegexpEnd():?string
+    {
+        return null;
+    }
 
     protected function parseExpression(int $exitLevel = 0)
     {
         $lastNode = null;
         while (!$this->endOfCode()) {
             $this->skipWhitespace();
-            if ($this->isKeyword('AS')) {
+            if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP')) {
                 return $lastNode;
             } else if ($this->isKeyword(',')) {
                 return $lastNode;
             } else if ($this->isChar('/[0-9]/')) {
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected number');
+                }
                 $number = $this->readUntill('/[^0-9]/');
                 $lastNode = new Literal('int', $number);
             } else if ($this->isChar('/[\'"]/')) {
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected string');
+                }
                 $quote = $this->code[$this->position];
                 $this->position++;
                 $string = $this->readUntill('/'.$quote.'/');
                 $this->position++;
                 $lastNode = new Literal('string', $string);
+            } else if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart() )) {
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected identifier');
+                }
+                $this->position++;
+                $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd() );
+                $this->position++;
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier($name);
             } else if ($this->isChar('/\+/')) {
                 $this->position++;
                 $this->skipWhitespace();
                 $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition($lastNode, $this->parseExpression(1));
+            } else if ($this->isChar('/-/')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Subtraction($lastNode, $this->parseExpression(1));
+            } else if ($this->isChar('/\*/')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Multiplication($lastNode, $this->parseExpression(1));
+            } else if ($this->isChar('/\//')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division($lastNode, $this->parseExpression(1));
+            } else if ($this->isChar('/%/')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Modulo($lastNode, $this->parseExpression(1));
             } else {
-                $this->throw('Not implemented');
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected identifier');
+                }
+                $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
+                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier($name);
             }
         }
         return $lastNode;
@@ -96,5 +138,43 @@ abstract class AbstractSqlParser
     private function isChar(string $regExp)
     {
         return preg_match($regExp, $this->code[$this->position]);
+    }
+
+    protected function readSelect()
+    {
+        $this->skipKeyword('SELECT');
+        $this->skipWhitespace();
+        $ret=new Select();
+
+        while(!$this->endOfCode()){
+            $this->skipWhitespace();
+            if($this->isKeyword('*')){
+                $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
+                $this->skipKeyword('*');
+            }else{
+                $startPosition = $this->position;
+                $expression = $this->parseExpression();
+                $name = substr($this->code, $startPosition, $this->position - $startPosition);
+                if($this->isKeyword('AS')){
+                    $this->skipKeyword('AS');
+                    $this->skipWhitespace();
+                    $name = $this->readUntill('/[\s,]/');
+                }
+                $ret->columns[] = new SelectColumn($name, $expression);
+            }
+            $this->skipWhitespace();
+            if($this->isKeyword(',')){
+                $this->skipKeyword(',');
+                $this->skipWhitespace();
+            }else{
+                break;
+            }
+        }
+        if($this->isKeyword('FROM')){
+            $this->skipKeyword('FROM');
+            $this->skipWhitespace();
+            $ret->from = $this->readTable();
+        }
+        return $ret;
     }
 }

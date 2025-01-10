@@ -13,4 +13,8 @@ class SelectColumn
         $this->name = $name;
         $this->expression = $expression;
     }
+    public function __toString()
+    {
+        return "SelectColumn(".$this->name.")";
+    }
 }
