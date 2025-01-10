@@ -23,8 +23,9 @@ class MongoConnection
     {
         $collection = $this->mongo->test_db->test_collection;
         $result= $collection->aggregate($aggregate)->toArray();
+        var_dump("Mongo Query Result");
         var_dump($result);
-        FunQuery::create($result)->each(fn($item) => var_dump($item));
-        FunQuery::create($result)->map(fn(BSONDocument $item) => $item->getArrayCopy())->toArray();
+        var_dump(json_decode(json_encode($result), true));
+        return json_decode(json_encode($result), true);
     }
 }
