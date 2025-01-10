@@ -104,12 +104,6 @@ jobs:
             ${{ runner.os }}-php-
 
 
-      - name: health2
-        run: pg_isready -U user
-      - name: health3
-        run: echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/yourStrong(!)Password@localhost:1521/XE\
-      - name: health4
-        run: "mongo --eval 'db.runCommand({ connectionStatus: 1 })'"
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
