@@ -25,6 +25,10 @@ class Connections
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\Oracle\OracleDriver(),
                 'connection' => new PdoConnection('oci:dbname=//localhost:1521/xe', 'system', 'yourStrong(!)Password')
             ],
+            'Postgresql' => (object)[
+                'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\Postgres\PostgresDriver(),
+                'connection' => new PdoConnection('pgsql:host=localhost;port=5432;dbname=test_db', 'user', 'user')
+            ],
         ];
     }
 }
