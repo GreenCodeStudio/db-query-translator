@@ -31,15 +31,15 @@ class MultiQueryTest extends TestCase
                 echo $targetName.': '.$sql2.PHP_EOL;
                 $results[] =  $targetConnection->connection->query($sql2);
             }
-            $this->matchAnyPair($results);
+            $this->matchAnyPair($results, json_encode($sql, $originalDialect));
         }
     }
 
-    protected function matchAnyPair($results)
+    protected function matchAnyPair($results, string $message)
     {
         for ($i = 0; $i < count($results); $i++) {
             for ($j = $i + 1; $j < count($results); $j++) {
-                $this->assertEquals($results[$i], $results[$j]);
+                $this->assertEquals($results[$i], $results[$j], $message);
             }
         }
     }
