@@ -75,15 +75,16 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
+          -
       oracle:
-        image: store/oracle/database-enterprise
+        image: gvenzl/oracle-free:latest
         env:
-          ORACLE_ALLOW_REMOTE: true
-          ORACLE_HOME: /opt/oracle/product/19c/dbhome_1
-          ORACLE_SID: ORCLCDB
-          ORACLE_PDB: ORCLPDB1
-          ORACLE_PWD: Oracle19
-          ORACLE_CHARACTERSET: AL32UTF8
+          ORACLE_SID: XE
+          ORACLE_PWD: yourStrong(!)Password
+          ORACLE_DATA: /var/lib/oracle
+        ports:
+          - 1521:1521
+        options: --health-cmd="sqlplus /nolog @<path_to_init_script>" --health-interval=10s --health-timeout=5s --health-retries=3
 
       postgres:
         image: postgres:latest
