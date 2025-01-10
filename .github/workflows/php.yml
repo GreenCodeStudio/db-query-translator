@@ -85,7 +85,6 @@ jobs:
           ORACLE_PASSWORD: yourStrong(!)Password
         ports:
           - 1521:1521
-        options: --health-cmd="sqlplus /nolog @<path_to_init_script>" --health-interval=10s --health-timeout=5s --health-retries=3
 
       postgres:
         image: postgres:latest
