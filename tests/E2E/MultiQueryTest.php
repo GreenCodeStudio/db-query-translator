@@ -31,7 +31,7 @@ class MultiQueryTest extends TestCase
                 echo $targetName.': '.$sql2.PHP_EOL;
                 $results[] =  $targetConnection->connection->query($sql2);
             }
-            $this->matchAnyPair($results, json_encode($sql, $originalDialect));
+            $this->matchAnyPair($results, json_encode([$sql, $originalDialect]));
         }
     }
 
