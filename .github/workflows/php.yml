@@ -75,7 +75,7 @@ jobs:
         image: mongo:latest
         ports:
           - 27017:27017
-          -
+
       oracle:
         image: gvenzl/oracle-free:latest
         env:
