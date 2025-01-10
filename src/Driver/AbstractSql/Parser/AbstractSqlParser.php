@@ -177,4 +177,5 @@ abstract class AbstractSqlParser
         }
         return $ret;
     }
+    protected abstract function readTable();
 }
