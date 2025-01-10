@@ -31,7 +31,7 @@ class Connections
             ],
             'SQLite' => (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\SQLite\SQLiteDriver(),
-                'connection' => new PdoConnection('sqlite::memory:')
+                'connection' => new PdoConnection('sqlite::memory:', null, null)
             ],
         ];
     }

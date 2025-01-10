@@ -21,18 +21,7 @@ class MySqlParser extends AbstractSqlParser
             $this->throw('Keyword expected');
         }
     }
-    protected function readTable(){
-        $this->skipWhitespace();
 
-        if($this->isKeyword('`')) {
-            $this->skipKeyword('`');
-            $firstName = $this->readUntill('/`/');
-            $this->skipKeyword('`');
-        }else{
-            $firstName=$this->readUntill('/\s/');
-        }
-        return new Table($firstName);
-    }
 
     protected function getIdentifierQuoteRegexpStart():?string
     {

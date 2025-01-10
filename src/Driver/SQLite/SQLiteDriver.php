@@ -8,4 +8,10 @@ class SQLiteDriver
         $serializer = new Serializer\SQLiteSerializer();
         return $serializer->serialize($node);
     }
+
+    public function parse($sql)
+    {
+        $parser = new Parser\SQLiteParser($sql);
+        return $parser->parse();
+    }
 }

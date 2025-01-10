@@ -3,6 +3,7 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
@@ -135,7 +136,7 @@ abstract class AbstractSqlParser
         return $lastNode;
     }
 
-    private function isChar(string $regExp)
+    protected function isChar(string $regExp)
     {
         return preg_match($regExp, $this->code[$this->position]);
     }
@@ -177,5 +178,16 @@ abstract class AbstractSqlParser
         }
         return $ret;
     }
-    protected abstract function readTable();
+    protected function readTable(){
+        $this->skipWhitespace();
+
+        if($this->getIdentifierQuoteRegexpStart()!== null && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
+            $this->position++;
+            $firstName = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
+            $this->position++;
+        }else{
+            $firstName=$this->readUntill('/\s/');
+        }
+        return new Table($firstName);
+    }
 }

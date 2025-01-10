@@ -20,6 +20,14 @@ class CrossTest extends TestCase
                         "SELECT * FROM [example]",
                         "SELECT * FROM example"
                     ],
+                'SQLite' =>
+                    [
+                        "SELECT * FROM example",
+                    ],
+                'Postgres' =>
+                    [
+                        "SELECT * FROM example",
+                    ],
             ],
             [
                 'MySql' =>
@@ -78,6 +86,8 @@ class CrossTest extends TestCase
                 'MySql' => new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver(),
                 'SqlServer' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
                 'MongoDB' => new \Mkrawczyk\DbQueryTranslator\Driver\MongoDB\MongoDBDriver(),
+                'Postgres' => new \Mkrawczyk\DbQueryTranslator\Driver\Postgres\PostgresDriver(),
+                'SQLite' => new \Mkrawczyk\DbQueryTranslator\Driver\SQLite\SQLiteDriver(),
             ];
     }
 
