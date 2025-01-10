@@ -77,17 +77,6 @@ jobs:
           - 27017:27017
 #        options: "--health-cmd=\"mongo --eval 'db.runCommand({ connectionStatus: 1 })'\" --health-interval=10s --health-timeout=5s --health-retries=3"
 
-      oracledb:
-        image: gvenzl/oracle-free:latest
-        env:
-          ORACLE_SID: XE
-          ORACLE_PWD: yourStrong(!)Password
-          ORACLE_DATA: /var/lib/oracle
-          ORACLE_PASSWORD: yourStrong(!)Password
-        ports:
-          - 1521:1521
-#        options: "--health-cmd=\"echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/yourStrong(!)Password@localhost:1521/XE\" --health-interval=10s --health-timeout=5s --health-retries=3"
-
       postgres:
         image: postgres:latest
         env:
@@ -103,14 +92,6 @@ jobs:
         php: [ 8.4 ]
     needs: build
     steps:
-      - name: Set up Oracle
-        uses: gvenzl/setup-oracle-free@v1
-        with:
-          app-user: system
-          app-user-password: yourStrong(!)Password
-          oracle-password: yourStrong(!)Password
-          volume: ${{ github.workspace }}/database-files
-
 
       - uses: actions/checkout@v4
       - name: Cache Composer packages
