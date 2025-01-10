@@ -2,7 +2,14 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Modulo;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Multiplication;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Subtraction;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
@@ -104,33 +111,55 @@ abstract class AbstractSqlParser
                 $this->position++;
                 $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd() );
                 $this->position++;
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier($name);
+                $lastNode = new Identifier($name);
             } else if ($this->isChar('/\+/')) {
+                if($exitLevel >3){
+                    return $lastNode;
+                }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition($lastNode, $this->parseExpression(1));
+                $lastNode = new Addition($lastNode, $this->parseExpression(3));
             } else if ($this->isChar('/-/')) {
+                if($exitLevel >3){
+                    return $lastNode;
+                }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Subtraction($lastNode, $this->parseExpression(1));
+                $lastNode = new Subtraction($lastNode, $this->parseExpression(3));
             } else if ($this->isChar('/\*/')) {
+                if($exitLevel >2){
+                    return $lastNode;
+                }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Multiplication($lastNode, $this->parseExpression(1));
+                $lastNode = new Multiplication($lastNode, $this->parseExpression(2));
             } else if ($this->isChar('/\//')) {
+                if($exitLevel >2){
+                    return $lastNode;
+                }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division($lastNode, $this->parseExpression(1));
+                $lastNode = new Division($lastNode, $this->parseExpression(2));
             } else if ($this->isChar('/%/')) {
+                if($exitLevel >2){
+                    return $lastNode;
+                }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Modulo($lastNode, $this->parseExpression(1));
+                $lastNode = new Modulo($lastNode, $this->parseExpression(2));
+            }else if ($this->isChar('/=/')) {
+                if($exitLevel >1){
+                    return $lastNode;
+                }
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new Equals($lastNode, $this->parseExpression(1));
             } else {
                 if ($lastNode !== null) {
                     $this->throw('Unexpected identifier');
                 }
                 $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
-                $lastNode = new \Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier($name);
+                $lastNode = new Identifier($name);
             }
         }
         return $lastNode;
@@ -156,6 +185,7 @@ abstract class AbstractSqlParser
                 $startPosition = $this->position;
                 $expression = $this->parseExpression();
                 $name = substr($this->code, $startPosition, $this->position - $startPosition);
+                $name = trim($name);
                 if($this->isKeyword('AS')){
                     $this->skipKeyword('AS');
                     $this->skipWhitespace();
@@ -175,6 +205,12 @@ abstract class AbstractSqlParser
             $this->skipKeyword('FROM');
             $this->skipWhitespace();
             $ret->from = $this->readTable();
+        }
+        $this->skipWhitespace();
+        if ($this->isKeyword('WHERE')) {
+            $this->skipKeyword('WHERE');
+            $this->skipWhitespace();
+            $ret->where = $this->parseExpression();
         }
         return $ret;
     }

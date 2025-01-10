@@ -67,14 +67,14 @@ class CrossTest extends TestCase
                     'SELECT one, two + 3, 3-4, 5*6, 7/8, [nine] %10 as ninemod FROM example',
                 ],
             ],
-//            [
-//                'MySql'=>[
-//                    'SELECT * FROM example WHERE id = 1 AND name = "John"',
-//                ],
-//                'SqlServer'=>[
-//                    'SELECT * FROM example WHERE id = 1 AND name = \'John\'',
-//                ],
-//            ]
+            [
+                'MySql'=>[
+                    'SELECT * FROM example WHERE id = 1 AND name = "John"',
+                ],
+                'SqlServer'=>[
+                    'SELECT * FROM example WHERE id = 1 AND name = \'John\'',
+                ],
+            ]
 
         ];
     }
