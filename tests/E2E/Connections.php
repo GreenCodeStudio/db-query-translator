@@ -20,7 +20,11 @@ class Connections
             'MongoDB' => (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\MongoDB\MongoDBDriver(),
                 'connection' => new MongoConnection('mongodb://localhost:27017')
-            ]
+            ],
+            'Oracle' => (object)[
+                'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\Oracle\OracleDriver(),
+                'connection' => new PdoConnection('oci:dbname=//localhost:1521/xe', 'system', 'yourStrong(!)Password')
+            ],
         ];
     }
 }
