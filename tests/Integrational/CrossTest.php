@@ -35,7 +35,7 @@ class CrossTest extends TestCase
                 'MongoDB' =>
                     [
                         [
-                            '$project' => ['four' => ['$add' => [2, 2]]]
+                            '$project' => ['four' => ['$add' => [2, 2]], '_id' => 0]
                         ]
                     ]
             ],
@@ -76,15 +76,15 @@ class CrossTest extends TestCase
                     $parsed[] = $driver->parse($query);
                 }
             }
-            $this->checkEachPair($parsed);
+            $this->checkEachPair($parsed, json_encode($group));
         }
     }
 
-    public function checkEachPair($parsed)
+    public function checkEachPair($parsed, $message)
     {
         for ($i = 0; $i < count($parsed); $i++) {
             for ($j = $i + 1; $j < count($parsed); $j++) {
-                $this->assertEquals($parsed[$i], $parsed[$j]);
+                $this->assertEquals($parsed[$i], $parsed[$j], $message);
             }
         }
     }

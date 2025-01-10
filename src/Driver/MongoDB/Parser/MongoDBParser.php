@@ -3,6 +3,7 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\MongoDB\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Column;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
@@ -25,10 +26,20 @@ class MongoDBParser
     private function parseStage(string $stage, mixed $params)
     {
         if ($stage === '$project') {
+            $isId= false;
             foreach ($params as $field => $value) {
-                $expression = $this->parseExpression($value);
-                $this->query->columns[] = new SelectColumn($field, $expression);
+                if($value!=0) {
+                    $expression = $this->parseExpression($value);
+                    $this->query->columns[] = new SelectColumn($field, $expression);
+                }
+                if($field === '_id'){
+                    $isId= true;
+                }
             }
+            if(!$isId){
+                $this->query->columns[] = new SelectColumn('_id', new Column('_id'));
+            }
+
         }else if($stage === '$match'){
 //            $this->query->where = $params;
         }

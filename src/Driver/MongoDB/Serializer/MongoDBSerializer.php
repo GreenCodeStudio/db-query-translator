@@ -13,8 +13,15 @@ class MongoDBSerializer
         if ($node instanceof Select) {
             $ret = [];
             $project = [];
+            $isId = false;
             foreach ($node->columns as $column) {
                 $project[$column->name] = $this->serialize($column->expression);
+                if ($column->name === '_id') {
+                    $isId = true;
+                }
+            }
+            if (!$isId) {
+                $project['_id'] = 0;
             }
             $ret[] = ['$project' => $project];
             return $ret;
