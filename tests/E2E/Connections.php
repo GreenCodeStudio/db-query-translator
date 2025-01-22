@@ -15,7 +15,7 @@ class Connections
             ],
             'SqlServer' => (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver(),
-                'connection' => new PdoConnection('sqlsrv:Server=localhost;Database=master', 'sa', 'RootRoot1')
+                'connection' => new PdoConnection('sqlsrv:Server=localhost;Database=master;TrustServerCertificate=True', 'sa', 'RootRoot1')
             ],
             'MongoDB' => (object)[
                 'driver' => new \Mkrawczyk\DbQueryTranslator\Driver\MongoDB\MongoDBDriver(),
