@@ -108,7 +108,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: pdo_oci, pdo_mssql
+          extensions: pdo_oci, pdo_sqlsrv
 
       - name: Install dependencies
         run: composer update --prefer-dist --no-progress
