@@ -3,7 +3,10 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Parameter;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
@@ -13,7 +16,7 @@ abstract class AbstractSqlSerializer
 {
     public function serialize($node): string
     {
-        if($node===null){
+        if ($node === null) {
             throw new \Exception('Node is null');
         }
         if ($node instanceof Select) {
@@ -26,8 +29,14 @@ abstract class AbstractSqlSerializer
                 $first = false;
                 $ret .= $this->serialize($column);
             }
-            if($node->from) {
+            if ($node->from) {
                 $ret .= ' FROM '.$this->serialize($node->from);
+            }
+            foreach ($node->join as $join) {
+                $ret .= ' '.$join->type.' JOIN '.$this->serialize($join->table).' ON '.$this->serialize($join->on);
+            }
+            if ($node->where) {
+                $ret .= ' WHERE '.$this->serialize($node->where);
             }
             return $ret;
         } else if ($node instanceof SelectAll) {
@@ -38,12 +47,22 @@ abstract class AbstractSqlSerializer
             return $node->tableName;
         } else if ($node instanceof Addition) {
             return $this->serialize($node->left).' + '.$this->serialize($node->right);
+        } else if ($node instanceof Equals) {
+            return $this->serialize($node->left).' = '.$this->serialize($node->right);
+        } else if ($node instanceof Identifier) {
+            if ($node->table) {
+                return $node->table.'.'.$node->name;
+            } else {
+                return $node->name;
+            }
         } else if ($node instanceof Literal) {
-            if($node->type=='int'){
+            if ($node->type == 'int') {
                 return (string)$node->value;
-            }else{
+            } else {
                 throw new \Exception('Unknown literal type '.$node->type);
             }
+        } else if ($node instanceof Parameter) {
+            return ':'.$node->name;
         } else {
             throw new \Exception('Unknown node type '.get_class($node));
         }

@@ -5,6 +5,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Parameter;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 use PhpParser\Node\Expr\BinaryOp\Equal;
@@ -77,5 +78,41 @@ class MySqlSelectTest extends TestCase
         $this->assertEquals('1', $parsed->where->left->right->value);
         $this->assertEquals('2', $parsed->where->right->value);
 
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
+    }
+    public function testJoin()
+    {
+        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $sql = "SELECT * FROM document d JOIN document_history_item dhi ON d.id = dhi.document_id WHERE dhi.training_id = :trainingId";
+        $sqlWanted = "SELECT * FROM `document` d JOIN `document_history_item` dhi ON `d`.`id` = `dhi`.`document_id` WHERE `dhi`.`training_id` = :trainingId";
+
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table::class, $parsed->from);
+        $this->assertEquals('document', $parsed->from->tableName);
+        $this->assertEquals('d', $parsed->from->alias);
+        $this->assertCount(1, $parsed->join);
+        $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table::class, $parsed->join[0]->table);
+        $this->assertEquals('document_history_item', $parsed->join[0]->table->tableName);
+        $this->assertEquals('dhi', $parsed->join[0]->table->alias);
+        $this->assertInstanceOf(Equals::class, $parsed->join[0]->on);
+        $this->assertInstanceOf(Identifier::class, $parsed->join[0]->on->left);
+        $this->assertEquals('id', $parsed->join[0]->on->left->name);
+        $this->assertEquals('d', $parsed->join[0]->on->left->table);
+        $this->assertInstanceOf(Identifier::class, $parsed->join[0]->on->right);
+        $this->assertEquals('document_id', $parsed->join[0]->on->right->name);
+        $this->assertEquals('dhi', $parsed->join[0]->on->right->table);
+
+        $this->assertInstanceOf(Equals::class, $parsed->where);
+        $this->assertInstanceOf(Identifier::class, $parsed->where->left);
+        $this->assertEquals('training_id', $parsed->where->left->name);
+        $this->assertEquals('dhi', $parsed->where->left->table);
+        $this->assertInstanceOf(Parameter::class, $parsed->where->right);
+        $this->assertEquals('trainingId', $parsed->where->right->name);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
     }
 }

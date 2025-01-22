@@ -60,22 +60,31 @@ class CrossTest extends TestCase
                     ],
             ],
             [
-                'MySql'=>[
+                'MySql' => [
                     'SELECT one, two + 3, 3-4, 5*6, 7/8, `nine` %10 as ninemod FROM example',
                 ],
-                'SqlServer'=>[
+                'SqlServer' => [
                     'SELECT one, two + 3, 3-4, 5*6, 7/8, [nine] %10 as ninemod FROM example',
                 ],
             ],
             [
-                'MySql'=>[
+                'MySql' => [
                     'SELECT * FROM example WHERE id = 1 AND name = "John"',
                 ],
-                'SqlServer'=>[
+                'SqlServer' => [
                     'SELECT * FROM example WHERE id = 1 AND name = \'John\'',
                 ],
+            ]            ,
+            [
+                'MySql' => [
+                    "SELECT * FROM document d JOIN document_history_item dhi ON d.id = dhi.document_id WHERE dhi.training_id = :trainingId",
+                    "SELECT * FROM `document` d JOIN `document_history_item` dhi ON `d`.`id` = `dhi`.`document_id` WHERE `dhi`.`training_id` = :trainingId"
+                ],
+                'SqlServer' => [
+                    "SELECT * FROM document d JOIN document_history_item dhi ON d.id = dhi.document_id WHERE dhi.training_id = :trainingId",
+                    "SELECT * FROM [document] d JOIN [document_history_item] dhi ON [d].[id] = [dhi].[document_id] WHERE [dhi].[training_id] = :trainingId"
+                ],
             ]
-
         ];
     }
 
@@ -99,7 +108,7 @@ class CrossTest extends TestCase
             foreach ($group as $driverName => $queries) {
                 $driver = $drivers[$driverName];
                 foreach ($queries as $query) {
-                    $parsed[] = [$driverName,$query, $driver->parse($query)];
+                    $parsed[] = [$driverName, $query, $driver->parse($query)];
                 }
             }
             $this->checkEachPair($parsed);

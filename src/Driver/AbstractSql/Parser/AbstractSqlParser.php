@@ -3,12 +3,15 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Join;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Modulo;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Multiplication;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Parameter;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Subtraction;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
@@ -71,11 +74,13 @@ abstract class AbstractSqlParser
         }
         return $ret;
     }
-    protected function getIdentifierQuoteRegexpStart():?string
+
+    protected function getIdentifierQuoteRegexpStart(): ?string
     {
         return null;
     }
-    protected function getIdentifierQuoteRegexpEnd():?string
+
+    protected function getIdentifierQuoteRegexpEnd(): ?string
     {
         return null;
     }
@@ -104,65 +109,109 @@ abstract class AbstractSqlParser
                 $string = $this->readUntill('/'.$quote.'/');
                 $this->position++;
                 $lastNode = new Literal('string', $string);
-            } else if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart() )) {
+            } else if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
                 if ($lastNode !== null) {
                     $this->throw('Unexpected identifier');
                 }
                 $this->position++;
-                $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd() );
+                $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
                 $this->position++;
-                $lastNode = new Identifier($name);
+                $table = null;
+                if ($this->isChar('/\./')) {
+                    $this->position++;
+                    $this->skipWhitespace();
+                    $table = $name;
+                    $name = $this->readSubIdentifier();
+                }
+                $lastNode = new Identifier($name, $table);
+            } else if ($this->isKeyword('AND')) {
+                if ($exitLevel > 1) {
+                    return $lastNode;
+                }
+                if ($lastNode === null) {
+                    $this->throw('Unexpected AND');
+                }
+                $this->skipKeyword('AND');
+                $this->skipWhitespace();
+                $lastNode = new BooleanAnd($lastNode, $this->parseExpression(1));
+            } else if ($this->isChar('/=/')) {
+                if ($exitLevel > 2) {
+                    return $lastNode;
+                }
+                $this->position++;
+                $this->skipWhitespace();
+                $lastNode = new Equals($lastNode, $this->parseExpression(2));
             } else if ($this->isChar('/\+/')) {
-                if($exitLevel >3){
+                if ($exitLevel > 3) {
                     return $lastNode;
                 }
                 $this->position++;
                 $this->skipWhitespace();
                 $lastNode = new Addition($lastNode, $this->parseExpression(3));
             } else if ($this->isChar('/-/')) {
-                if($exitLevel >3){
+                if ($exitLevel > 3) {
                     return $lastNode;
                 }
                 $this->position++;
                 $this->skipWhitespace();
                 $lastNode = new Subtraction($lastNode, $this->parseExpression(3));
             } else if ($this->isChar('/\*/')) {
-                if($exitLevel >2){
+                if ($exitLevel > 4) {
                     return $lastNode;
                 }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new Multiplication($lastNode, $this->parseExpression(2));
+                $lastNode = new Multiplication($lastNode, $this->parseExpression(4));
             } else if ($this->isChar('/\//')) {
-                if($exitLevel >2){
+                if ($exitLevel > 4) {
                     return $lastNode;
                 }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new Division($lastNode, $this->parseExpression(2));
+                $lastNode = new Division($lastNode, $this->parseExpression(4));
             } else if ($this->isChar('/%/')) {
-                if($exitLevel >2){
+                if ($exitLevel > 4) {
                     return $lastNode;
                 }
                 $this->position++;
                 $this->skipWhitespace();
-                $lastNode = new Modulo($lastNode, $this->parseExpression(2));
-            }else if ($this->isChar('/=/')) {
-                if($exitLevel >1){
-                    return $lastNode;
+                $lastNode = new Modulo($lastNode, $this->parseExpression(4));
+            } else if ($this->isChar('/:/')) {
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected parameter');
                 }
                 $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Equals($lastNode, $this->parseExpression(1));
+                $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
+                $lastNode = new Parameter($name);
             } else {
                 if ($lastNode !== null) {
                     $this->throw('Unexpected identifier');
                 }
                 $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
-                $lastNode = new Identifier($name);
+                $table = null;
+                $this->skipWhitespace();
+                if ($this->isChar('/\./')) {
+                    $this->position++;
+                    $this->skipWhitespace();
+                    $table = $name;
+                    $name = $this->readSubIdentifier();
+                }
+                $lastNode = new Identifier($name, $table);
             }
         }
         return $lastNode;
+    }
+
+    protected function readSubIdentifier()
+    {
+        if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
+            $this->position++;
+            $x = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
+            $this->position++;
+            return $x;
+        } else {
+            return $this->readUntill('/[.,\'"`+\-*\/ ]/');
+        }
     }
 
     protected function isChar(string $regExp)
@@ -174,19 +223,19 @@ abstract class AbstractSqlParser
     {
         $this->skipKeyword('SELECT');
         $this->skipWhitespace();
-        $ret=new Select();
+        $ret = new Select();
 
-        while(!$this->endOfCode()){
+        while (!$this->endOfCode()) {
             $this->skipWhitespace();
-            if($this->isKeyword('*')){
+            if ($this->isKeyword('*')) {
                 $ret->columns[] = new \Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll();
                 $this->skipKeyword('*');
-            }else{
+            } else {
                 $startPosition = $this->position;
                 $expression = $this->parseExpression();
                 $name = substr($this->code, $startPosition, $this->position - $startPosition);
                 $name = trim($name);
-                if($this->isKeyword('AS')){
+                if ($this->isKeyword('AS')) {
                     $this->skipKeyword('AS');
                     $this->skipWhitespace();
                     $name = $this->readUntill('/[\s,]/');
@@ -194,17 +243,35 @@ abstract class AbstractSqlParser
                 $ret->columns[] = new SelectColumn($name, $expression);
             }
             $this->skipWhitespace();
-            if($this->isKeyword(',')){
+            if ($this->isKeyword(',')) {
                 $this->skipKeyword(',');
                 $this->skipWhitespace();
-            }else{
+            } else {
                 break;
             }
         }
-        if($this->isKeyword('FROM')){
+        if ($this->isKeyword('FROM')) {
             $this->skipKeyword('FROM');
             $this->skipWhitespace();
             $ret->from = $this->readTable();
+        }
+        $this->skipWhitespace();
+        if ($this->isKeyword('JOIN') || $this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
+            if ($this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
+                $this->skipKeyword('LEFT', 'RIGHT', 'INNER', 'OUTER');
+            }
+            $this->skipWhitespace();
+            $this->skipKeyword('JOIN');
+            $this->skipWhitespace();
+            $table = $this->readTable();
+            $this->skipWhitespace();
+            $on = null;
+            if ($this->isKeyword('ON')) {
+                $this->skipKeyword('ON');
+                $this->skipWhitespace();
+                $on = $this->parseExpression();
+            }
+            $ret->join[] = new Join($table, $on);
         }
         $this->skipWhitespace();
         if ($this->isKeyword('WHERE')) {
@@ -214,16 +281,23 @@ abstract class AbstractSqlParser
         }
         return $ret;
     }
-    protected function readTable(){
+
+    protected function readTable()
+    {
         $this->skipWhitespace();
 
-        if($this->getIdentifierQuoteRegexpStart()!== null && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
+        if ($this->getIdentifierQuoteRegexpStart() !== null && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
             $this->position++;
             $firstName = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
             $this->position++;
-        }else{
-            $firstName=$this->readUntill('/\s/');
+        } else {
+            $firstName = $this->readUntill('/\s/');
         }
-        return new Table($firstName);
+        $this->skipWhitespace();
+        $alias = $firstName;
+        if (!$this->isKeyword('JOIN') && !$this->isKeyword('LEFT') && !$this->isKeyword('RIGHT') && !$this->isKeyword('INNER') && !$this->isKeyword('OUTER') && !$this->isKeyword('ON') && !$this->isKeyword('WHERE') && !$this->isKeyword('GROUP') && !$this->isKeyword('ORDER') && !$this->isKeyword('LIMIT')) {
+            $alias = $this->readUntill('/\s/');
+        }
+        return new Table($firstName, $alias);
     }
 }

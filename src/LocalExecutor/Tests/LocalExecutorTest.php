@@ -31,6 +31,7 @@ class LocalExecutorTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals($wanted, $result);
     }
+
     public function testSelectSome()
     {
 
@@ -40,7 +41,7 @@ class LocalExecutorTest extends \PHPUnit\Framework\TestCase
         $select->from = new Table('sample1');
         $result = LocalExecutor::ExecuteQuery($this->getLocalDB(), $select)->toArray();
 
-        $wanted = [['name1' => 'John', 'two'=>2], ['name1' => 'Doe', 'two'=>2], ['name1' => 'Smith', 'two'=>2]];
+        $wanted = [(object)['name1' => 'John', 'two' => 2], (object)['name1' => 'Doe', 'two' => 2], (object)['name1' => 'Smith', 'two' => 2]];
 
         $this->assertEquals($wanted, $result);
     }
