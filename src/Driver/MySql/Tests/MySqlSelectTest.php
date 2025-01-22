@@ -4,6 +4,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 use PhpParser\Node\Expr\BinaryOp\Equal;
@@ -66,6 +67,7 @@ class MySqlSelectTest extends TestCase
         $this->assertCount(1, $parsed->columns);
         $this->assertInstanceOf(SelectColumn::class, $parsed->columns[0]);
         $this->assertInstanceOf(Equals::class, $parsed->columns[0]->expression);
+        $this->assertInstanceOf(Identifier::class, $parsed->columns[0]->expression->left);
         $this->assertEquals('one', $parsed->columns[0]->expression->left->name);
         $this->assertEquals('1', $parsed->columns[0]->expression->right->value);
         $this->assertEquals('one =1', $parsed->columns[0]->name);
