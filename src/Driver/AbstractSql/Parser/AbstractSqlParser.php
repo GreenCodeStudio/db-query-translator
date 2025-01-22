@@ -257,8 +257,22 @@ abstract class AbstractSqlParser
         }
         $this->skipWhitespace();
         if ($this->isKeyword('JOIN') || $this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
-            if ($this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
-                $this->skipKeyword('LEFT', 'RIGHT', 'INNER', 'OUTER');
+            $type = 'INNER';
+            if ($this->isKeyword('LEFT')) {
+                $type = 'LEFT';
+                $this->skipKeyword('LEFT');
+            }
+            if ($this->isKeyword('RIGHT')) {
+                $type = 'RIGHT';
+                $this->skipKeyword('RIGHT');
+            }
+            if ($this->isKeyword('INNER')) {
+                $type = 'INNER';
+                $this->skipKeyword('INNER');
+            }
+            if ($this->isKeyword('OUTER')) {
+                $type = 'OUTER';
+                $this->skipKeyword('OUTER');
             }
             $this->skipWhitespace();
             $this->skipKeyword('JOIN');
@@ -271,7 +285,7 @@ abstract class AbstractSqlParser
                 $this->skipWhitespace();
                 $on = $this->parseExpression();
             }
-            $ret->join[] = new Join($table, $on);
+            $ret->join[] = new Join($type, $table, $on);
         }
         $this->skipWhitespace();
         if ($this->isKeyword('WHERE')) {
@@ -296,7 +310,11 @@ abstract class AbstractSqlParser
         $this->skipWhitespace();
         $alias = $firstName;
         if (!$this->isKeyword('JOIN') && !$this->isKeyword('LEFT') && !$this->isKeyword('RIGHT') && !$this->isKeyword('INNER') && !$this->isKeyword('OUTER') && !$this->isKeyword('ON') && !$this->isKeyword('WHERE') && !$this->isKeyword('GROUP') && !$this->isKeyword('ORDER') && !$this->isKeyword('LIMIT')) {
-            $alias = $this->readUntill('/\s/');
+
+            $alias = $this->readSubIdentifier();
+            if (empty($alias)) {
+                $alias = $firstName;
+            }
         }
         return new Table($firstName, $alias);
     }

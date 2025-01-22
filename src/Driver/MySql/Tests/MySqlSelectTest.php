@@ -85,7 +85,7 @@ class MySqlSelectTest extends TestCase
     {
         $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
         $sql = "SELECT * FROM document d JOIN document_history_item dhi ON d.id = dhi.document_id WHERE dhi.training_id = :trainingId";
-        $sqlWanted = "SELECT * FROM `document` d JOIN `document_history_item` dhi ON `d`.`id` = `dhi`.`document_id` WHERE `dhi`.`training_id` = :trainingId";
+        $sqlWanted = "SELECT * FROM `document` `d` INNER JOIN `document_history_item` `dhi` ON `d`.`id` = `dhi`.`document_id` WHERE `dhi`.`training_id` = :trainingId";
 
         $parsed = $driver->parse($sql);
 
