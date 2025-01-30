@@ -13,6 +13,10 @@ class MultiQueryTest extends TestCase
                 "SELECT 2+2 as four",
                 "MySql"
             ],
+            [
+                "SELECT (SELECT 2) + (SELECT 2+2) as six",
+                "MySql"
+            ]
         ];
     }
 
