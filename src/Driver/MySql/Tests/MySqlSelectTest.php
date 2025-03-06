@@ -166,4 +166,13 @@ class MySqlSelectTest extends TestCase
         $this->assertEquals('name', $parsed->columns[1]->name);
         $this->assertEquals('internal_id', $parsed->columns[2]->name);
     }
+    public function testRealWorldExample001()
+    {
+        $driver = new MySqlDriver();
+        $sql="SELECT * FROM notification WHERE id_user = ? AND expires >= ? ORDER BY stamp DESC";
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+
+    }
 }

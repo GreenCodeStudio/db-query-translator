@@ -4,6 +4,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
@@ -143,6 +144,22 @@ abstract class AbstractSqlParser
                 $this->position++;
                 $this->skipWhitespace();
                 $lastNode = new Equals($lastNode, $this->parseExpression(2));
+            } else if ($this->isChar('/[><]=?/')) {
+                if ($exitLevel > 2) {
+                    return $lastNode;
+                }
+                $lessThan = false;
+                $orEqual = false;
+                if ($this->isChar('/</')) {
+                    $lessThan = true;
+                }
+                $this->position++;
+                if ($this->isChar('/=/')) {
+                    $orEqual = true;
+                    $this->position++;
+                }
+                $this->skipWhitespace();
+                $lastNode = new Comparison($lastNode, $this->parseExpression(2), $lessThan, $orEqual);
             } else if ($this->isChar('/\+/')) {
                 if ($exitLevel > 3) {
                     return $lastNode;
