@@ -30,4 +30,33 @@ class SqlServerParser extends AbstractSqlParser
     {
         return '/\]/';
     }
+
+
+    protected function parseLimit()
+    {
+        $this->throw('LIMIT not supported in this dialect');
+    }
+
+    protected function parseOffset()
+    {
+        $this->skipKeyword('OFFSET');
+        $this->skipWhitespace();
+        $offset = (int)$this->readUntill('/[^0-9]/');
+        $this->skipWhitespace();
+        $this->skipKeyword('ROWS');
+        return $offset;
+    }
+    protected function parseFetch()
+    {
+        $this->skipKeyword('FETCH');
+        $this->skipWhitespace();
+        $this->skipKeyword('NEXT');
+        $this->skipWhitespace();
+        $limit = (int)$this->readUntill('/[^0-9]/');
+        $this->skipWhitespace();
+        $this->skipKeyword('ROWS');
+        $this->skipWhitespace();
+        $this->skipKeyword('ONLY');
+        return $limit;
+    }
 }

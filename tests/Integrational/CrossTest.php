@@ -161,6 +161,11 @@ ORDER BY sa.assigned_at ASC"
                     ORDER BY po2.finish DESC
                     OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY) as last_form_order_id"
                 ]
+            ],
+            [
+                'MySql' => ["SELECT DISTINCT id, name FROM example"],
+                'SqlServer' => ["SELECT DISTINCT id, name FROM example"],
+                'Postgres' => ["SELECT DISTINCT id, name FROM example"],
             ]
         ];
     }

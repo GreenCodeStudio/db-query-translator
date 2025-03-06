@@ -31,4 +31,5 @@ class MySqlSerializer extends AbstractSqlSerializer
             return parent::serialize($node);
         }
     }
+
 }

@@ -30,6 +30,7 @@ abstract class AbstractSqlParser
 
     protected function throw(string $reason)
     {
+        throw new ParserException($reason, $this->position, $this->code);
         throw new \Exception("Parser error on position ".$this->position.": ".$reason."\r\n".substr($this->code, $this->position - 10, 10)."\033[31;1;4m".substr($this->code, $this->position, 10)."\033[0m");
     }
 
@@ -293,7 +294,53 @@ abstract class AbstractSqlParser
             $this->skipWhitespace();
             $ret->where = $this->parseExpression();
         }
+
+        if ($this->isKeyword('LIMIT')) {
+            [$offset, $limit] = $this->parseLimit();
+            if ($offset !== null) {
+                $ret->offset = $offset;
+            }
+            $ret->limit = $limit;
+        }
+
+        $this->skipWhitespace();
+        if ($this->isKeyword('OFFSET')) {
+            $ret->offset = $this->parseOffset();
+        }
+        $this->skipWhitespace();
+        if ($this->isKeyword('FETCH')) {
+            $ret->limit = $this->parseFetch();
+        }
+
         return $ret;
+    }
+
+    protected function parseLimit()
+    {
+        $this->skipKeyword('LIMIT');
+        $this->skipWhitespace();
+        $limit = (int)$this->readUntill('/[^0-9]/');
+        $offset = null;
+        $this->skipWhitespace();
+        if ($this->isChar('/,/')) {
+            $this->position++;
+            $this->skipWhitespace();
+            $offset = $limit;
+            $limit = (int)$this->readUntill('/[^0-9]/');
+        }
+        return [$offset, $limit];
+    }
+
+    protected function parseOffset()
+    {
+        $this->skipKeyword('OFFSET');
+        $this->skipWhitespace();
+        return (int)$this->readUntill('/[^0-9]/');
+    }
+
+    protected function parseFetch()
+    {
+        $this->throw('FETCH not supported in this dialect');
     }
 
     protected function readTable()
@@ -309,7 +356,7 @@ abstract class AbstractSqlParser
         }
         $this->skipWhitespace();
         $alias = $firstName;
-        if (!$this->isKeyword('JOIN') && !$this->isKeyword('LEFT') && !$this->isKeyword('RIGHT') && !$this->isKeyword('INNER') && !$this->isKeyword('OUTER') && !$this->isKeyword('ON') && !$this->isKeyword('WHERE') && !$this->isKeyword('GROUP') && !$this->isKeyword('ORDER') && !$this->isKeyword('LIMIT')) {
+        if (!$this->isKeyword('JOIN') && !$this->isKeyword('LEFT') && !$this->isKeyword('RIGHT') && !$this->isKeyword('INNER') && !$this->isKeyword('OUTER') && !$this->isKeyword('ON') && !$this->isKeyword('WHERE') && !$this->isKeyword('GROUP') && !$this->isKeyword('ORDER') && !$this->isKeyword('LIMIT') && !$this->isKeyword('FETCH') && !$this->isKeyword('OFFSET')) {
 
             $alias = $this->readSubIdentifier();
             if (empty($alias)) {

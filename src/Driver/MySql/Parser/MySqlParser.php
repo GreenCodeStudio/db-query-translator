@@ -13,22 +13,26 @@ class MySqlParser extends AbstractSqlParser
     {
         parent::__construct($code);
     }
+
     public function parse()
     {
-        if($this->isKeyword('SELECT')) {
+        if ($this->isKeyword('SELECT')) {
             return $this->readSelect();
-        }else{
+        } else {
             $this->throw('Keyword expected');
         }
     }
 
 
-    protected function getIdentifierQuoteRegexpStart():?string
+    protected function getIdentifierQuoteRegexpStart(): ?string
     {
         return '/`/';
     }
-    protected function getIdentifierQuoteRegexpEnd():?string
+
+    protected function getIdentifierQuoteRegexpEnd(): ?string
     {
         return '/`/';
     }
+
+
 }

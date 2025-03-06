@@ -38,6 +38,7 @@ abstract class AbstractSqlSerializer
             if ($node->where) {
                 $ret .= ' WHERE '.$this->serialize($node->where);
             }
+            $ret .= $this->serializeLimit($node);
             return $ret;
         } else if ($node instanceof SelectAll) {
             return '*';
@@ -66,5 +67,17 @@ abstract class AbstractSqlSerializer
         } else {
             throw new \Exception('Unknown node type '.get_class($node));
         }
+    }
+
+    protected function serializeLimit(Select $select)
+    {
+        $ret = '';
+        if ($select->limit !== null) {
+            $ret .= ' LIMIT '.$select->limit;
+        }
+        if ($select->offset !== null) {
+            $ret .= ' OFFSET '.$select->offset;
+        }
+        return $ret;
     }
 }

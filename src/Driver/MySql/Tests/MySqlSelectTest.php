@@ -2,6 +2,8 @@
 
 namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 
+use Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver;
+use Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
@@ -15,7 +17,7 @@ class MySqlSelectTest extends TestCase
 {
     public function testSelectAll()
     {
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $driver = new MySqlDriver();
         $sql = "SELECT * FROM `example`";
         $parsed = $driver->parse($sql);
 
@@ -32,7 +34,7 @@ class MySqlSelectTest extends TestCase
     public function testSelectExpressions()
     {
 
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $driver = new MySqlDriver();
         $sql = "SELECT 1+1, 2+2 as four";
         $sqlWanted = "SELECT 1 + 1 AS `1+1`, 2 + 2 AS `four`";
         $parsed = $driver->parse($sql);
@@ -58,7 +60,7 @@ class MySqlSelectTest extends TestCase
     }
     public function testWhere()
     {
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $driver = new MySqlDriver();
         $sql = "SELECT one =1 FROM `example` WHERE one + 1 = 2";
         $sqlWanted = "SELECT `one` = 1 AS `one =1` FROM `example` WHERE `one` + 1 = 2";
 
@@ -83,7 +85,7 @@ class MySqlSelectTest extends TestCase
     }
     public function testJoin()
     {
-        $driver = new \Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver();
+        $driver = new MySqlDriver();
         $sql = "SELECT * FROM document d JOIN document_history_item dhi ON d.id = dhi.document_id WHERE dhi.training_id = :trainingId";
         $sqlWanted = "SELECT * FROM `document` `d` INNER JOIN `document_history_item` `dhi` ON `d`.`id` = `dhi`.`document_id` WHERE `dhi`.`training_id` = :trainingId";
 
@@ -111,6 +113,25 @@ class MySqlSelectTest extends TestCase
         $this->assertEquals('dhi', $parsed->where->left->table);
         $this->assertInstanceOf(Parameter::class, $parsed->where->right);
         $this->assertEquals('trainingId', $parsed->where->right->name);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
+    }
+
+    public function testOffset()
+    {
+        $driver = new MySqlDriver();
+        $sql = "SELECT * FROM document LIMIT 10,20";
+        $sqlWanted = "SELECT * FROM `document` LIMIT 20 OFFSET 10";
+
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table::class, $parsed->from);
+        $this->assertEquals('document', $parsed->from->tableName);
+        $this->assertEquals(10, $parsed->offset);
+        $this->assertEquals(20, $parsed->limit);
+
 
         $serialized = $driver->serialize($parsed);
         $this->assertEquals($sqlWanted, $serialized);
