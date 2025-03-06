@@ -38,6 +38,18 @@ abstract class AbstractSqlSerializer
             if ($node->where) {
                 $ret .= ' WHERE '.$this->serialize($node->where);
             }
+            if (!empty($node->orderBy)) {
+                $ret .= ' ORDER BY ';
+                $first = true;
+                foreach ($node->orderBy as $orderBy) {
+                    if (!$first) {
+                        $ret .= ', ';
+                    }
+                    $first = false;
+                    $ret .= $this->serialize($orderBy->expression);
+                    $ret .= $orderBy->descending ? ' DESC' : ' ASC';
+                }
+            }
             $ret .= $this->serializeLimit($node);
             return $ret;
         } else if ($node instanceof SelectAll) {

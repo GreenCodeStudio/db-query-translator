@@ -136,4 +136,34 @@ class MySqlSelectTest extends TestCase
         $serialized = $driver->serialize($parsed);
         $this->assertEquals($sqlWanted, $serialized);
     }
+    public function testOrderBy()
+    {
+        $driver = new MySqlDriver();
+        $sql = "SELECT * FROM `document` ORDER BY `id` ASC, `name` DESC";
+
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertEquals($parsed->orderBy[0]->expression->name, 'id');
+        $this->assertEquals($parsed->orderBy[0]->descending, false);
+        $this->assertEquals($parsed->orderBy[1]->expression->name, 'name');
+        $this->assertEquals($parsed->orderBy[1]->descending, true);
+
+
+
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sql, $serialized);
+    }
+    public function testSelectName()
+    {
+        $driver = new MySqlDriver();
+        $sql="SELECT p.id, p.`name`, `p`.internal_id FROM product p";
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertEquals('id', $parsed->columns[0]->name);
+        $this->assertEquals('name', $parsed->columns[1]->name);
+        $this->assertEquals('internal_id', $parsed->columns[2]->name);
+    }
 }

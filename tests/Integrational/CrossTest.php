@@ -166,6 +166,11 @@ ORDER BY sa.assigned_at ASC"
                 'MySql' => ["SELECT DISTINCT id, name FROM example"],
                 'SqlServer' => ["SELECT DISTINCT id, name FROM example"],
                 'Postgres' => ["SELECT DISTINCT id, name FROM example"],
+            ],
+            [
+                'MySql' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
+                'SqlServer' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
+                'Postgres' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
             ]
         ];
     }

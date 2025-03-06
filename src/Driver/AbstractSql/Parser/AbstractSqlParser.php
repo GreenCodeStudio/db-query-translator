@@ -91,7 +91,7 @@ abstract class AbstractSqlParser
         $lastNode = null;
         while (!$this->endOfCode()) {
             $this->skipWhitespace();
-            if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP')) {
+            if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
                 return $lastNode;
             } else if ($this->isKeyword(',')) {
                 return $lastNode;
@@ -184,6 +184,8 @@ abstract class AbstractSqlParser
                 $this->position++;
                 $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
                 $lastNode = new Parameter($name);
+            } else if ($this->isAnyKeyword()) {
+                break;
             } else {
                 if ($lastNode !== null) {
                     $this->throw('Unexpected identifier');
@@ -226,6 +228,12 @@ abstract class AbstractSqlParser
         $this->skipWhitespace();
         $ret = new Select();
 
+        if($this->isKeyword('DISTINCT')){
+            $this->skipKeyword('DISTINCT');
+            $ret->distinct=true;
+            $this->skipWhitespace();
+        }
+
         while (!$this->endOfCode()) {
             $this->skipWhitespace();
             if ($this->isKeyword('*')) {
@@ -234,8 +242,12 @@ abstract class AbstractSqlParser
             } else {
                 $startPosition = $this->position;
                 $expression = $this->parseExpression();
-                $name = substr($this->code, $startPosition, $this->position - $startPosition);
-                $name = trim($name);
+                if ($expression instanceof Identifier) {
+                    $name = $expression->name;
+                } else {
+                    $name = substr($this->code, $startPosition, $this->position - $startPosition);
+                    $name = trim($name);
+                }
                 if ($this->isKeyword('AS')) {
                     $this->skipKeyword('AS');
                     $this->skipWhitespace();
@@ -295,27 +307,59 @@ abstract class AbstractSqlParser
             $ret->where = $this->parseExpression();
         }
 
-        if ($this->isKeyword('LIMIT')) {
-            [$offset, $limit] = $this->parseLimit();
-            if ($offset !== null) {
-                $ret->offset = $offset;
+        if ($this->isKeyword('ORDER')) {
+            $this->skipKeyword('ORDER');
+            $this->skipWhitespace();
+            $this->skipKeyword('BY');
+            $this->skipWhitespace();
+            while (!$this->endOfCode()) {
+                $expression = $this->parseExpression();
+                $this->skipWhitespace();
+                $descending = false;
+                if ($this->isKeyword('DESC')) {
+                    $this->skipKeyword('DESC');
+                    $descending = true;
+                } else if ($this->isKeyword('ASC')) {
+                    $this->skipKeyword('ASC');
+                }
+                $ret->orderBy[] = (object)[
+                    'expression' => $expression,
+                    'descending' => $descending
+                ];
+                $this->skipWhitespace();
+                if ($this->isChar('/,/')) {
+                    $this->position++;
+                    $this->skipWhitespace();
+                } else {
+                    break;
+                }
             }
-            $ret->limit = $limit;
         }
+        while (!$this->endOfCode() && $this->isKeyword('LIMIT') || $this->isKeyword('OFFSET') || $this->isKeyword('FETCH')) {
 
-        $this->skipWhitespace();
-        if ($this->isKeyword('OFFSET')) {
-            $ret->offset = $this->parseOffset();
-        }
-        $this->skipWhitespace();
-        if ($this->isKeyword('FETCH')) {
-            $ret->limit = $this->parseFetch();
+            if ($this->isKeyword('LIMIT')) {
+                [$offset, $limit] = $this->parseLimit();
+                if ($offset !== null) {
+                    $ret->offset = $offset;
+                }
+                $ret->limit = $limit;
+            }
+
+            $this->skipWhitespace();
+            if ($this->isKeyword('OFFSET')) {
+                $ret->offset = $this->parseOffset();
+            }
+            $this->skipWhitespace();
+            if ($this->isKeyword('FETCH')) {
+                $ret->limit = $this->parseFetch();
+            }
         }
 
         return $ret;
     }
 
-    protected function parseLimit()
+    protected
+    function parseLimit()
     {
         $this->skipKeyword('LIMIT');
         $this->skipWhitespace();
@@ -331,19 +375,22 @@ abstract class AbstractSqlParser
         return [$offset, $limit];
     }
 
-    protected function parseOffset()
+    protected
+    function parseOffset()
     {
         $this->skipKeyword('OFFSET');
         $this->skipWhitespace();
         return (int)$this->readUntill('/[^0-9]/');
     }
 
-    protected function parseFetch()
+    protected
+    function parseFetch()
     {
         $this->throw('FETCH not supported in this dialect');
     }
 
-    protected function readTable()
+    protected
+    function readTable()
     {
         $this->skipWhitespace();
 
@@ -356,7 +403,7 @@ abstract class AbstractSqlParser
         }
         $this->skipWhitespace();
         $alias = $firstName;
-        if (!$this->isKeyword('JOIN') && !$this->isKeyword('LEFT') && !$this->isKeyword('RIGHT') && !$this->isKeyword('INNER') && !$this->isKeyword('OUTER') && !$this->isKeyword('ON') && !$this->isKeyword('WHERE') && !$this->isKeyword('GROUP') && !$this->isKeyword('ORDER') && !$this->isKeyword('LIMIT') && !$this->isKeyword('FETCH') && !$this->isKeyword('OFFSET')) {
+        if (!$this->isAnyKeyword()) {
 
             $alias = $this->readSubIdentifier();
             if (empty($alias)) {
@@ -364,5 +411,17 @@ abstract class AbstractSqlParser
             }
         }
         return new Table($firstName, $alias);
+    }
+
+    protected
+    function isAnyKeyword()
+    {
+        $keywords = ['JOIN', 'LEFT', 'RIGHT', 'INNER', 'OUTER', 'ON', 'WHERE', 'GROUP', 'ORDER', 'LIMIT', 'FETCH', 'OFFSET', 'GROUP', 'BY', 'ASC', 'DESC', 'AND', 'OR', 'AS', 'FROM', 'SELECT', 'HAVING'];
+        foreach ($keywords as $keyword) {
+            if ($this->isKeyword($keyword)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

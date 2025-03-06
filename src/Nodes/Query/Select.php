@@ -10,4 +10,9 @@ class Select
     public array $join = [];
     public ?int $offset = null;
     public ?int $limit = null;
+    public array $orderBy = [];
+    /**
+     * @var true
+     */
+    public bool $distinct = false;
 }
