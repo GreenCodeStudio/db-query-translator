@@ -47,7 +47,8 @@ abstract class AbstractSqlParser
         if ($this->position + strlen($keyword) > strlen($this->code)) {
             return false;
         }
-        return strtolower(substr($this->code, $this->position, strlen($keyword))) === strtolower($keyword);
+        $canBeKeyword = $this->position + strlen($keyword) == strlen($this->code) || preg_match('/[^a-zA-Z0-9_]/', $this->code[$this->position + strlen($keyword)]);
+        return $canBeKeyword && strtolower(substr($this->code, $this->position, strlen($keyword))) === strtolower($keyword);
     }
 
     protected function skipKeyword(string ...$keywords)
@@ -228,9 +229,9 @@ abstract class AbstractSqlParser
         $this->skipWhitespace();
         $ret = new Select();
 
-        if($this->isKeyword('DISTINCT')){
+        if ($this->isKeyword('DISTINCT')) {
             $this->skipKeyword('DISTINCT');
-            $ret->distinct=true;
+            $ret->distinct = true;
             $this->skipWhitespace();
         }
 
