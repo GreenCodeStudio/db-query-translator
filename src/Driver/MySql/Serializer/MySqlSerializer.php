@@ -11,8 +11,10 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
 class MySqlSerializer extends AbstractSqlSerializer
 {
-    public function serialize($node): string
+    public function serialize($node, $parentExitLevel = 0): string
     {
+
+        $exitLevel = self::$exitLevels[get_class($node)] ?? 100;
         if ($node instanceof Table) {
             if ($node->alias != $node->tableName) {
                 return '`'.$node->tableName.'` `'.$node->alias.'`';
@@ -20,7 +22,7 @@ class MySqlSerializer extends AbstractSqlSerializer
                 return '`'.$node->tableName.'`';
             }
         } else if ($node instanceof SelectColumn) {
-            return $this->serialize($node->expression).' AS `'.$node->name.'`';
+            return $this->serialize($node->expression, $exitLevel).' AS `'.$node->name.'`';
         } else if ($node instanceof Identifier) {
             if ($node->table) {
                 return '`'.$node->table.'`.`'.$node->name.'`';
@@ -28,7 +30,7 @@ class MySqlSerializer extends AbstractSqlSerializer
                 return '`'.$node->name.'`';
             }
         } else {
-            return parent::serialize($node);
+            return parent::serialize($node, $parentExitLevel);
         }
     }
 

@@ -7,10 +7,13 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanNot;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanOr;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Multiplication;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Parameter;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Subtraction;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
@@ -18,13 +21,32 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
 abstract class AbstractSqlSerializer
 {
-    public function serialize($node): string
+    static protected $exitLevels = [
+        Select::class => 0,
+        SelectColumn::class=>1,//tmp
+        BooleanOr::class => 1,
+        BooleanAnd::class => 1,
+        Equals::class => 2,
+        Comparison::class => 2,
+        Addition::class => 3,
+        Subtraction::class => 3,
+        Multiplication::class => 4,
+        Division::class => 4,
+        BooleanNot::class => 5
+    ];
+
+    public function serialize($node, $parentExitLevel = 0): string
     {
+        $exitLevel = self::$exitLevels[get_class($node)] ?? 100;
+        $ret='';
+        if($exitLevel < $parentExitLevel){
+            $ret .= '(';
+        }
         if ($node === null) {
             throw new \Exception('Node is null');
         }
         if ($node instanceof Select) {
-            $ret = 'SELECT ';
+            $ret .= 'SELECT ';
             $first = true;
             foreach ($node->columns as $column) {
                 if (!$first) {
@@ -55,45 +77,48 @@ abstract class AbstractSqlSerializer
                 }
             }
             $ret .= $this->serializeLimit($node);
-            return $ret;
         } else if ($node instanceof SelectAll) {
-            return '*';
+            $ret .=  '*';
         } else if ($node instanceof SelectColumn) {
-            return $this->serialize($node->expression).' AS '.$node->name;
+            $ret .=  $this->serialize($node->expression, $exitLevel).' AS '.$node->name;
         } else if ($node instanceof Table) {
-            return $node->tableName;
+            $ret .=  $node->tableName;
         } else if ($node instanceof Addition) {
-            return $this->serialize($node->left).' + '.$this->serialize($node->right);
+            $ret .=  $this->serialize($node->left, $exitLevel).' + '.$this->serialize($node->right, $exitLevel);
         } else if ($node instanceof Equals) {
-            return $this->serialize($node->left).' = '.$this->serialize($node->right);
+            $ret .=  $this->serialize($node->left, $exitLevel).' = '.$this->serialize($node->right, $exitLevel);
         } else if ($node instanceof BooleanAnd) {
-            return $this->serialize($node->left).' AND '.$this->serialize($node->right);
+            $ret .=  $this->serialize($node->left, $exitLevel).' AND '.$this->serialize($node->right, $exitLevel);
         } else if ($node instanceof BooleanOr) {
-            return $this->serialize($node->left).' OR '.$this->serialize($node->right);
+            $ret .=  $this->serialize($node->left, $exitLevel).' OR '.$this->serialize($node->right, $exitLevel);
         } else if ($node instanceof BooleanNot) {
-            return 'NOT '.$this->serialize($node->expression);
+            $ret .=  'NOT '.$this->serialize($node->expression, $exitLevel);
         } else if ($node instanceof Comparison) {
-            return $this->serialize($node->left).' '.($node->lessThan ? '<' : '>').($node->orEqual ? '=' : '').' '.$this->serialize($node->right);
+            $ret .=  $this->serialize($node->left, $exitLevel).' '.($node->lessThan ? '<' : '>').($node->orEqual ? '=' : '').' '.$this->serialize($node->right, $exitLevel);
         } else if ($node instanceof Identifier) {
             if ($node->table) {
-                return $node->table.'.'.$node->name;
+                $ret .=  $node->table.'.'.$node->name;
             } else {
-                return $node->name;
+                $ret .=  $node->name;
             }
         } else if ($node instanceof Literal) {
             if ($node->type == 'int') {
-                return (string)$node->value;
+                $ret .=  (string)$node->value;
             } else {
                 throw new \Exception('Unknown literal type '.$node->type);
             }
         } else if ($node instanceof Parameter) {
             if (empty($node->name))
-                return '?';
+                $ret .=  '?';
             else
-                return ':'.$node->name;
+                $ret .=  ':'.$node->name;
         } else {
             throw new \Exception('Unknown node type '.get_class($node));
         }
+        if($exitLevel < $parentExitLevel){
+            $ret .= ')';
+        }
+        return $ret;
     }
 
     protected function serializeLimit(Select $select)

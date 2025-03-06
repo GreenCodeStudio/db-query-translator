@@ -10,14 +10,14 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
 
 class SqlServerSerializer extends AbstractSqlSerializer
 {
-    public function serialize($node): string
+    public function serialize($node, $parentExitLevel = 0): string
     {
         if ($node instanceof Table) {
             return '['.$node->tableName.']';
         } else if ($node instanceof SelectColumn) {
             return $this->serialize($node->expression).' AS ['.$node->name.']';
         } else {
-            return parent::serialize($node);
+            return parent::serialize($node, $parentExitLevel);
         }
     }
 

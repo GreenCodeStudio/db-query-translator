@@ -210,4 +210,23 @@ class MySqlSelectTest extends TestCase
         $this->assertEquals($sqlWanted, $serialized);
 
     }
+
+    public function testSubQuery(){
+        $driver = new MySqlDriver();
+        $sql = "SELECT (SELECT 1 as one) as one";
+        $sqlWanted = "SELECT (SELECT 1 AS `one`) AS `one`";
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertInstanceOf(SelectColumn::class, $parsed->columns[0]);
+        $this->assertInstanceOf(Select::class, $parsed->columns[0]->expression);
+        $this->assertInstanceOf(SelectColumn::class, $parsed->columns[0]->expression->columns[0]);
+        $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal::class, $parsed->columns[0]->expression->columns[0]->expression);
+        $this->assertEquals('1', $parsed->columns[0]->expression->columns[0]->expression->value);
+        $this->assertEquals('one', $parsed->columns[0]->name);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
+
+    }
 }

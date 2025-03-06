@@ -4,10 +4,13 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Parser;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanNot;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanOr;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Division;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\IsNull;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Join;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Modulo;
@@ -104,7 +107,26 @@ abstract class AbstractSqlParser
 
     protected function parseExpressionOneStep($lastNode, int $exitLevel = 0)
     {
-        if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
+        if ($this->isChar('/\(/')) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected (');
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            if ($this->isKeyword('SELECT')) {
+                $content = $this->readSelect();
+            } else {
+                $content = $this->parseExpression(0);
+            }
+            $this->skipWhitespace();
+            if (!$this->isChar('/\)/')) {
+                $this->throw('Expected )');
+            }
+            $this->position++;
+            return [false, $content];
+        } else if ($this->isChar('/\)/')) {
+            return [true, $lastNode];
+        } else if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
             return [true, $lastNode];
         } else if ($this->isChar('/,/')) {
             return [true, $lastNode];
@@ -138,6 +160,26 @@ abstract class AbstractSqlParser
                 $name = $this->readSubIdentifier();
             }
             return [false, new Identifier($name, $table)];
+        } else if ($this->isKeyword('NOT')) {
+            if ($exitLevel > 5) {
+                return [true, $lastNode];
+            }
+            if ($lastNode !== null) {
+                $this->throw('Unexpected NOT');
+            }
+            $this->skipKeyword('NOT');
+            $this->skipWhitespace();
+            return [false, new BooleanNot($this->parseExpression(5))];
+        } else if ($this->isKeyword('OR')) {
+            if ($exitLevel > 1) {
+                return [true, $lastNode];
+            }
+            if ($lastNode === null) {
+                $this->throw('Unexpected OR');
+            }
+            $this->skipKeyword('OR');
+            $this->skipWhitespace();
+            return [false, new BooleanOr($lastNode, $this->parseExpression(1))];
         } else if ($this->isKeyword('AND')) {
             if ($exitLevel > 1) {
                 return [true, $lastNode];
@@ -148,6 +190,18 @@ abstract class AbstractSqlParser
             $this->skipKeyword('AND');
             $this->skipWhitespace();
             return [false, new BooleanAnd($lastNode, $this->parseExpression(1))];
+        } else if ($this->isKeyword('IS')) {
+            if ($exitLevel > 2) {
+                return [true, $lastNode];
+            }
+            $this->position += 2;
+            $this->skipWhitespace();
+            if ($this->isKeyword('NULL')) {
+                $this->position += 4;
+                return [false, new IsNull($lastNode)];
+            } else {
+                $this->throw('Expected NULL');
+            }
         } else if ($this->isChar('/=/')) {
             if ($exitLevel > 2) {
                 return [true, $lastNode];
@@ -225,7 +279,7 @@ abstract class AbstractSqlParser
             if ($lastNode !== null) {
                 $this->throw('Unexpected identifier');
             }
-            $name = $this->readUntill('/[.,\'"`+\-*\/ \s]/');
+            $name = $this->readUntill('/[.,\'"`+\-*\/ \s\(\)\=\!\?\|\&]/');
             $table = null;
             $this->skipWhitespace();
             if ($this->isChar('/\./')) {
@@ -246,13 +300,13 @@ abstract class AbstractSqlParser
             $this->position++;
             return $x;
         } else {
-            return $this->readUntill('/[.,\'"`+\-*\/ ]/');
+            return $this->readUntill('/[.,\'"`+\-*\/ \s\(\)\=\!\?\|\&]/');
         }
     }
 
-    protected function isChar(string $regExp)
+    protected function isChar(string $regExp, int $posDiff = 0)
     {
-        return preg_match($regExp, $this->code[$this->position]);
+        return preg_match($regExp, $this->code[$this->position + $posDiff]);
     }
 
     protected function readSelect()
@@ -284,7 +338,7 @@ abstract class AbstractSqlParser
                 if ($this->isKeyword('AS')) {
                     $this->skipKeyword('AS');
                     $this->skipWhitespace();
-                    $name = $this->readUntill('/[\s,]/');
+                    $name = $this->readUntill('/[\s,\)]/');
                 }
                 $ret->columns[] = new SelectColumn($name, $expression);
             }
@@ -302,7 +356,7 @@ abstract class AbstractSqlParser
             $ret->from = $this->readTable();
         }
         $this->skipWhitespace();
-        if ($this->isKeyword('JOIN') || $this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
+        while ($this->isKeyword('JOIN') || $this->isKeyword('LEFT') || $this->isKeyword('RIGHT') || $this->isKeyword('INNER') || $this->isKeyword('OUTER')) {
             $type = 'INNER';
             if ($this->isKeyword('LEFT')) {
                 $type = 'LEFT';
@@ -387,6 +441,7 @@ abstract class AbstractSqlParser
                 $ret->limit = $this->parseFetch();
             }
         }
+        $this->skipWhitespace();
 
         return $ret;
     }

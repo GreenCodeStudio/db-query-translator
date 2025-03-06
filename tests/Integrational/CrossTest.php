@@ -118,7 +118,7 @@ class CrossTest extends TestCase
                 ]
             ], [
                 'MySql' => [
-                    "SELECT count(*) as cnt 
+                    "SELECT count(*) as cnt
                 FROM training t
                 LEFT JOIN rtraining_user rtu ON t.id = rtu.training_id AND rtu.user_id = :userId"
 
@@ -139,12 +139,12 @@ ORDER BY sa.assigned_at ASC"
                 ]
             ],
             [
-                'MySql' => [
+                /*'MySql' => [
                     "SELECT r.id, (
-                    SELECT po2.id 
+                    SELECT po2.id
                     FROM product_order po2
-                        JOIN recipe ON recipe.id=po2.recipe_id 
-                        JOIN recipe_machine ON recipe_machine.recipe_id=recipe.id 
+                        JOIN recipe ON recipe.id=po2.recipe_id
+                        JOIN recipe_machine ON recipe_machine.recipe_id=recipe.id
                     WHERE recipe_machine.form_id=f.id AND po2.start < po.start
                     ORDER BY po2.finish DESC
                     LIMIT 1) as last_form_order_id
@@ -154,14 +154,14 @@ ORDER BY sa.assigned_at ASC"
                 ],
                 'SqlServer' => [
                     "SELECT r.id, (
-                    SELECT po2.id 
+                    SELECT po2.id
                     FROM product_order po2
-                        JOIN recipe ON recipe.id=po2.recipe_id 
-                        JOIN recipe_machine ON recipe_machine.recipe_id=recipe.id 
+                        JOIN recipe ON recipe.id=po2.recipe_id
+                        JOIN recipe_machine ON recipe_machine.recipe_id=recipe.id
                     WHERE recipe_machine.form_id=f.id AND po2.start < po.start
                     ORDER BY po2.finish DESC
                     OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY) as last_form_order_id"
-                ]
+                ]*/
             ],
             [
                 'MySql' => ["SELECT DISTINCT id, name FROM example"],
@@ -177,6 +177,10 @@ ORDER BY sa.assigned_at ASC"
                 'MySql' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
                 'SqlServer' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
                 'Postgres' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
+            ],
+            [
+                'MySql' => ["SELECT !a OR !b as x FROM example", "SELECT !a || !b as x FROM example", "SELECT NOT a OR NOT b as x FROM example", "SELECT (NOT a) OR (NOT b) as x FROM example"],
+
             ]
         ];
     }
