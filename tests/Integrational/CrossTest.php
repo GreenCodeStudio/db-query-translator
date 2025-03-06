@@ -103,6 +103,7 @@ class CrossTest extends TestCase
             [
                 'MySql' => [
                     "SELECT p.id, p.name, p.internal_id FROM product p WHERE p.active = 1 ORDER BY p.internal_id",
+                    "SELECT p.id,p.name,p.internal_id FROM product p WHERE p.active = 1 ORDER BY p.internal_id",
                     "SELECT `p`.`id`, `p`.`name`, `p`.`internal_id` FROM `product` p WHERE `p`.`active` = 1 ORDER BY `p`.`internal_id`"
                 ],
                 'SqlServer' => [

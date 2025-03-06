@@ -95,7 +95,7 @@ abstract class AbstractSqlParser
             $this->skipWhitespace();
             if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
                 return $lastNode;
-            } else if ($this->isKeyword(',')) {
+            } else if ($this->isChar('/,/')) {
                 return $lastNode;
             } else if ($this->isChar('/[0-9]/')) {
                 if ($lastNode !== null) {
@@ -214,7 +214,7 @@ abstract class AbstractSqlParser
                 if ($lastNode !== null) {
                     $this->throw('Unexpected identifier');
                 }
-                $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
+                $name = $this->readUntill('/[.,\'"`+\-*\/ \s]/');
                 $table = null;
                 $this->skipWhitespace();
                 if ($this->isChar('/\./')) {
@@ -280,8 +280,8 @@ abstract class AbstractSqlParser
                 $ret->columns[] = new SelectColumn($name, $expression);
             }
             $this->skipWhitespace();
-            if ($this->isKeyword(',')) {
-                $this->skipKeyword(',');
+            if ($this->isChar('/,/')) {
+                $this->position++;
                 $this->skipWhitespace();
             } else {
                 break;

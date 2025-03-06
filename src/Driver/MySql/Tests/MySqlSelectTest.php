@@ -192,4 +192,22 @@ class MySqlSelectTest extends TestCase
         $this->assertEquals($sqlWanted, $serialized);
 
     }
+    public function testNoSpaces()
+    {
+        $driver = new MySqlDriver();
+        $sql = "SELECT id,name\t,value\nFROM\tproduct";
+        $sqlWanted = "SELECT `id` AS `id`, `name` AS `name`, `value` AS `value` FROM `product`";
+        $parsed = $driver->parse($sql);
+
+        $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertEquals('id', $parsed->columns[0]->name);
+        $this->assertEquals('name', $parsed->columns[1]->name);
+        $this->assertEquals('value', $parsed->columns[2]->name);
+        $this->assertInstanceOf(\Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table::class, $parsed->from);
+        $this->assertEquals('product', $parsed->from->tableName);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
+
+    }
 }
