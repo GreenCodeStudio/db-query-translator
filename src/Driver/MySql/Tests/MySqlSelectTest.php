@@ -5,6 +5,8 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\MySql\Tests;
 use Mkrawczyk\DbQueryTranslator\Driver\MySql\MySqlDriver;
 use Mkrawczyk\DbQueryTranslator\Driver\SqlServer\SqlServerDriver;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Parameter;
@@ -170,9 +172,24 @@ class MySqlSelectTest extends TestCase
     {
         $driver = new MySqlDriver();
         $sql="SELECT * FROM notification WHERE id_user = ? AND expires >= ? ORDER BY stamp DESC";
+        $sqlWanted = "SELECT * FROM `notification` WHERE `id_user` = ? AND `expires` >= ? ORDER BY `stamp` DESC";
         $parsed = $driver->parse($sql);
 
         $this->assertInstanceOf(Select::class, $parsed);
+        $this->assertInstanceOf(BooleanAnd::class, $parsed->where);
+        $this->assertInstanceOf(Equals::class, $parsed->where->left);
+        $this->assertInstanceOf(Identifier::class, $parsed->where->left->left);
+        $this->assertEquals('id_user', $parsed->where->left->left->name);
+        $this->assertInstanceOf(Parameter::class, $parsed->where->left->right);
+        $this->assertInstanceOf(Comparison::class, $parsed->where->right);
+        $this->assertFalse($parsed->where->right->lessThan);
+        $this->assertTrue($parsed->where->right->orEqual);
+        $this->assertInstanceOf(Identifier::class, $parsed->where->right->left);
+        $this->assertEquals('expires', $parsed->where->right->left->name);
+        $this->assertInstanceOf(Parameter::class, $parsed->where->right->right);
+
+        $serialized = $driver->serialize($parsed);
+        $this->assertEquals($sqlWanted, $serialized);
 
     }
 }

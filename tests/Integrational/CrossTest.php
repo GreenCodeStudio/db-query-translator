@@ -171,6 +171,11 @@ ORDER BY sa.assigned_at ASC"
                 'MySql' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
                 'SqlServer' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
                 'Postgres' => ["SELECT * FROM example ORDER BY a", "SELECT * FROM example ORDER BY a ASC"],
+            ],
+            [
+                'MySql' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
+                'SqlServer' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
+                'Postgres' => ["SELECT * FROM example WHERE a > 5 AND (b < 10 OR c = 3)"],
             ]
         ];
     }

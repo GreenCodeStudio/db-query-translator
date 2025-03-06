@@ -195,6 +195,12 @@ abstract class AbstractSqlParser
                 $this->position++;
                 $this->skipWhitespace();
                 $lastNode = new Modulo($lastNode, $this->parseExpression(4));
+            } else if ($this->isChar('/\?/')) {
+                if ($lastNode !== null) {
+                    $this->throw('Unexpected parameter');
+                }
+                $this->position++;
+                $lastNode = new Parameter('');
             } else if ($this->isChar('/:/')) {
                 if ($lastNode !== null) {
                     $this->throw('Unexpected parameter');

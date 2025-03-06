@@ -4,6 +4,7 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
@@ -71,6 +72,8 @@ abstract class AbstractSqlSerializer
             return $this->serialize($node->left).' OR '.$this->serialize($node->right);
         } else if ($node instanceof BooleanNot) {
             return 'NOT '.$this->serialize($node->expression);
+        } else if ($node instanceof Comparison) {
+            return $this->serialize($node->left).' '.($node->lessThan ? '<' : '>').($node->orEqual ? '=' : '').' '.$this->serialize($node->right);
         } else if ($node instanceof Identifier) {
             if ($node->table) {
                 return $node->table.'.'.$node->name;
@@ -84,7 +87,10 @@ abstract class AbstractSqlSerializer
                 throw new \Exception('Unknown literal type '.$node->type);
             }
         } else if ($node instanceof Parameter) {
-            return ':'.$node->name;
+            if (empty($node->name))
+                return '?';
+            else
+                return ':'.$node->name;
         } else {
             throw new \Exception('Unknown node type '.get_class($node));
         }
