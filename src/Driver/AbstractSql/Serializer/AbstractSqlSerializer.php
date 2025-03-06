@@ -3,6 +3,7 @@
 namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Literal;
@@ -11,6 +12,8 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
+use PhpParser\Node\Expr\BinaryOp\BooleanOr;
+use PhpParser\Node\Expr\BooleanNot;
 
 abstract class AbstractSqlSerializer
 {
@@ -62,6 +65,12 @@ abstract class AbstractSqlSerializer
             return $this->serialize($node->left).' + '.$this->serialize($node->right);
         } else if ($node instanceof Equals) {
             return $this->serialize($node->left).' = '.$this->serialize($node->right);
+        } else if ($node instanceof BooleanAnd) {
+            return $this->serialize($node->left).' AND '.$this->serialize($node->right);
+        } else if ($node instanceof BooleanOr) {
+            return $this->serialize($node->left).' OR '.$this->serialize($node->right);
+        } else if ($node instanceof BooleanNot) {
+            return 'NOT '.$this->serialize($node->expression);
         } else if ($node instanceof Identifier) {
             if ($node->table) {
                 return $node->table.'.'.$node->name;
