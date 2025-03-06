@@ -32,7 +32,7 @@ abstract class AbstractSqlParser
     protected function throw(string $reason)
     {
         throw new ParserException($reason, $this->position, $this->code);
-        throw new \Exception("Parser error on position ".$this->position.": ".$reason."\r\n".substr($this->code, $this->position - 10, 10)."\033[31;1;4m".substr($this->code, $this->position, 10)."\033[0m");
+
     }
 
 

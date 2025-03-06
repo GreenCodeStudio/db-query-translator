@@ -4,6 +4,8 @@ namespace Mkrawczyk\DbQueryTranslator\Driver\AbstractSql\Serializer;
 
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Addition;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanAnd;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanNot;
+use Mkrawczyk\DbQueryTranslator\Nodes\Expression\BooleanOr;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Comparison;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Equals;
 use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Identifier;
@@ -13,8 +15,6 @@ use Mkrawczyk\DbQueryTranslator\Nodes\Expression\Table;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectAll;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Column\SelectColumn;
 use Mkrawczyk\DbQueryTranslator\Nodes\Query\Select;
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
-use PhpParser\Node\Expr\BooleanNot;
 
 abstract class AbstractSqlSerializer
 {
