@@ -93,140 +93,149 @@ abstract class AbstractSqlParser
         $lastNode = null;
         while (!$this->endOfCode()) {
             $this->skipWhitespace();
-            if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
-                return $lastNode;
-            } else if ($this->isChar('/,/')) {
-                return $lastNode;
-            } else if ($this->isChar('/[0-9]/')) {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected number');
-                }
-                $number = $this->readUntill('/[^0-9]/');
-                $lastNode = new Literal('int', $number);
-            } else if ($this->isChar('/[\'"]/')) {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected string');
-                }
-                $quote = $this->code[$this->position];
-                $this->position++;
-                $string = $this->readUntill('/'.$quote.'/');
-                $this->position++;
-                $lastNode = new Literal('string', $string);
-            } else if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected identifier');
-                }
-                $this->position++;
-                $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
-                $this->position++;
-                $table = null;
-                if ($this->isChar('/\./')) {
-                    $this->position++;
-                    $this->skipWhitespace();
-                    $table = $name;
-                    $name = $this->readSubIdentifier();
-                }
-                $lastNode = new Identifier($name, $table);
-            } else if ($this->isKeyword('AND')) {
-                if ($exitLevel > 1) {
-                    return $lastNode;
-                }
-                if ($lastNode === null) {
-                    $this->throw('Unexpected AND');
-                }
-                $this->skipKeyword('AND');
-                $this->skipWhitespace();
-                $lastNode = new BooleanAnd($lastNode, $this->parseExpression(1));
-            } else if ($this->isChar('/=/')) {
-                if ($exitLevel > 2) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Equals($lastNode, $this->parseExpression(2));
-            } else if ($this->isChar('/[><]=?/')) {
-                if ($exitLevel > 2) {
-                    return $lastNode;
-                }
-                $lessThan = false;
-                $orEqual = false;
-                if ($this->isChar('/</')) {
-                    $lessThan = true;
-                }
-                $this->position++;
-                if ($this->isChar('/=/')) {
-                    $orEqual = true;
-                    $this->position++;
-                }
-                $this->skipWhitespace();
-                $lastNode = new Comparison($lastNode, $this->parseExpression(2), $lessThan, $orEqual);
-            } else if ($this->isChar('/\+/')) {
-                if ($exitLevel > 3) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Addition($lastNode, $this->parseExpression(3));
-            } else if ($this->isChar('/-/')) {
-                if ($exitLevel > 3) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Subtraction($lastNode, $this->parseExpression(3));
-            } else if ($this->isChar('/\*/')) {
-                if ($exitLevel > 4) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Multiplication($lastNode, $this->parseExpression(4));
-            } else if ($this->isChar('/\//')) {
-                if ($exitLevel > 4) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Division($lastNode, $this->parseExpression(4));
-            } else if ($this->isChar('/%/')) {
-                if ($exitLevel > 4) {
-                    return $lastNode;
-                }
-                $this->position++;
-                $this->skipWhitespace();
-                $lastNode = new Modulo($lastNode, $this->parseExpression(4));
-            } else if ($this->isChar('/\?/')) {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected parameter');
-                }
-                $this->position++;
-                $lastNode = new Parameter('');
-            } else if ($this->isChar('/:/')) {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected parameter');
-                }
-                $this->position++;
-                $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
-                $lastNode = new Parameter($name);
-            } else if ($this->isAnyKeyword()) {
+
+            [$isEnd, $lastNode] = $this->parseExpressionOneStep($lastNode, $exitLevel);
+            if ($isEnd) {
                 break;
-            } else {
-                if ($lastNode !== null) {
-                    $this->throw('Unexpected identifier');
-                }
-                $name = $this->readUntill('/[.,\'"`+\-*\/ \s]/');
-                $table = null;
-                $this->skipWhitespace();
-                if ($this->isChar('/\./')) {
-                    $this->position++;
-                    $this->skipWhitespace();
-                    $table = $name;
-                    $name = $this->readSubIdentifier();
-                }
-                $lastNode = new Identifier($name, $table);
             }
         }
         return $lastNode;
+    }
+
+    protected function parseExpressionOneStep($lastNode, int $exitLevel = 0)
+    {
+        if ($this->isKeyword('AS') || $this->isKeyword('FROM') || $this->isKeyword('WHERE') || $this->isKeyword('GROUP') || $this->isKeyword('ASC') || $this->isKeyword('DESC')) {
+            return [true, $lastNode];
+        } else if ($this->isChar('/,/')) {
+            return [true, $lastNode];
+        } else if ($this->isChar('/[0-9]/')) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected number');
+            }
+            $number = $this->readUntill('/[^0-9]/');
+            return [false, new Literal('int', $number)];
+        } else if ($this->isChar('/[\'"]/')) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected string');
+            }
+            $quote = $this->code[$this->position];
+            $this->position++;
+            $string = $this->readUntill('/'.$quote.'/');
+            $this->position++;
+            return [false, new Literal('string', $string)];
+        } else if ($this->getIdentifierQuoteRegexpStart() && $this->isChar($this->getIdentifierQuoteRegexpStart())) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected identifier');
+            }
+            $this->position++;
+            $name = $this->readUntill($this->getIdentifierQuoteRegexpEnd());
+            $this->position++;
+            $table = null;
+            if ($this->isChar('/\./')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $table = $name;
+                $name = $this->readSubIdentifier();
+            }
+            return [false, new Identifier($name, $table)];
+        } else if ($this->isKeyword('AND')) {
+            if ($exitLevel > 1) {
+                return [true, $lastNode];
+            }
+            if ($lastNode === null) {
+                $this->throw('Unexpected AND');
+            }
+            $this->skipKeyword('AND');
+            $this->skipWhitespace();
+            return [false, new BooleanAnd($lastNode, $this->parseExpression(1))];
+        } else if ($this->isChar('/=/')) {
+            if ($exitLevel > 2) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Equals($lastNode, $this->parseExpression(2))];
+        } else if ($this->isChar('/[><]=?/')) {
+            if ($exitLevel > 2) {
+                return [true, $lastNode];
+            }
+            $lessThan = false;
+            $orEqual = false;
+            if ($this->isChar('/</')) {
+                $lessThan = true;
+            }
+            $this->position++;
+            if ($this->isChar('/=/')) {
+                $orEqual = true;
+                $this->position++;
+            }
+            $this->skipWhitespace();
+            return [false, new Comparison($lastNode, $this->parseExpression(2), $lessThan, $orEqual)];
+        } else if ($this->isChar('/\+/')) {
+            if ($exitLevel > 3) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Addition($lastNode, $this->parseExpression(3))];
+        } else if ($this->isChar('/-/')) {
+            if ($exitLevel > 3) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Subtraction($lastNode, $this->parseExpression(3))];
+        } else if ($this->isChar('/\*/')) {
+            if ($exitLevel > 4) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Multiplication($lastNode, $this->parseExpression(4))];
+        } else if ($this->isChar('/\//')) {
+            if ($exitLevel > 4) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Division($lastNode, $this->parseExpression(4))];
+        } else if ($this->isChar('/%/')) {
+            if ($exitLevel > 4) {
+                return [true, $lastNode];
+            }
+            $this->position++;
+            $this->skipWhitespace();
+            return [false, new Modulo($lastNode, $this->parseExpression(4))];
+        } else if ($this->isChar('/\?/')) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected parameter');
+            }
+            $this->position++;
+            return [false, new Parameter('')];
+        } else if ($this->isChar('/:/')) {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected parameter');
+            }
+            $this->position++;
+            $name = $this->readUntill('/[.,\'"`+\-*\/ ]/');
+            return [false, new Parameter($name)];
+        } else if ($this->isAnyKeyword()) {
+            return [true, $lastNode];
+        } else {
+            if ($lastNode !== null) {
+                $this->throw('Unexpected identifier');
+            }
+            $name = $this->readUntill('/[.,\'"`+\-*\/ \s]/');
+            $table = null;
+            $this->skipWhitespace();
+            if ($this->isChar('/\./')) {
+                $this->position++;
+                $this->skipWhitespace();
+                $table = $name;
+                $name = $this->readSubIdentifier();
+            }
+            return [false, new Identifier($name, $table)];
+        }
     }
 
     protected function readSubIdentifier()
